@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homestay yêu thích - YangHomestay</title>
+  <meta name="robots" content="noindex,follow">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#1F2923">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+  <header class="site-header" id="site-header"></header>
+
+  <section class="section-tight">
+    <div class="container">
+      <div class="breadcrumb"><a href="./">Trang chủ</a> / Yêu thích</div>
+      <h1>Homestay yêu thích</h1>
+      <div class="grid grid-3" id="list"></div>
+    </div>
+  </section>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var UI = window.YangUI;
+      UI.injectHeader();
+      UI.injectFooter();
+
+      UI.checkAuth().then(function (c) {
+        if (!c) { location.href = 'login.html?next=favorites.html'; return; }
+        load();
+      });
+
+      function load() {
+        var box = document.getElementById('list');
+        box.innerHTML = UI.skeletonCard() + UI.skeletonCard() + UI.skeletonCard();
+        window.YangAPI.get('favorites').then(function (j) {
+          if (!j.success) { box.innerHTML = '<div class="state-box"><h3>' + UI.esc(j.message || 'Lỗi') + '</h3></div>'; return; }
+          var list = j.data || [];
+          if (!list.length) {
+            box.innerHTML = '<div class="state-box" style="grid-column:1/-1"><span class="emoji">🤍</span><h3>Chưa có homestay yêu thích</h3><p>Nhấn ♡ trên thẻ homestay để lưu lại.</p><a class="btn btn-primary" href="homestays.html">Khám phá homestay</a></div>';
+            return;
+          }
+          box.innerHTML = list.map(function (f) {
+            var u = f.unit;
+            if (!u) return '';
+            var img = u.cover_image && u.cover_image.image_url
+              ? window.assetUrl(u.cover_image.image_url)
+              : window.assetUrl('assets/images/homestays/fallback/unit-fallback.jpg');
+            return '<article class="card">' +
+              '<div class="card-media"><img src="' + UI.esc(img) + '" alt="' + UI.esc(u.name) + '" loading="lazy" onerror="this.src=window.assetUrl(\'assets/images/homestays/fallback/unit-fallback.jpg\')">' +
+              '<button class="heart-btn active" data-id="' + f.id + '" data-unit="' + u.id + '">♥</button></div>' +
+              '<div class="card-body">' +
+              '<h3 class="card-title">' + UI.esc(u.name) + '</h3>' +
+              '<div class="card-loc">' + UI.icon('map') + UI.esc((u.property && u.property.district) || 'Hà Nội') + ', Hà Nội</div>' +
+              '<div class="card-meta"><span>' + UI.icon('users') + u.max_guests + ' khách</span><span>' + UI.icon('bed') + (u.bedrooms || 1) + ' phòng ngủ</span></div>' +
+              '<div class="card-footer"><div class="card-price"><b>' + UI.formatVND(u.base_price) + '</b><span>/ đêm</span></div>' +
+              '<a class="btn btn-outline" href="unit-detail.html?id=' + u.id + '">Xem chi tiết</a></div>' +
+              '</div></article>';
+          }).join('');
+          box.querySelectorAll('.heart-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              var unitId = btn.getAttribute('data-unit');
+              window.YangAPI.post('remove-favorite', { unit_id: Number(unitId) }).then(function (j) {
+                if (j.success) { UI.toast('Đã xóa khỏi yêu thích', 'info'); load(); }
+                else UI.handleError(j);
+              });
+            });
+          });
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yêu cầu đặt chỗ đã được tạo - YangHomestay</title>
+  <meta name="robots" content="noindex,follow">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#1F2923">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+  <header class="site-header" id="site-header"></header>
+
+  <section class="section">
+    <div class="container">
+      <div class="form-card text-center">
+        <div class="success-mark" aria-hidden="true">✓</div>
+        <h2>Yêu cầu đặt chỗ đã được tạo</h2>
+        <p style="color:var(--charcoal-soft)">Cảm ơn bạn đã chọn YangHomestay. Yêu cầu đang ở trạng thái <b>chờ xác nhận</b>; bước này chưa thực hiện thanh toán trực tuyến.</p>
+        <div style="background:var(--cream);border-radius:14px;padding:20px;margin:18px 0;text-align:left">
+          <p style="margin:0 0 8px"><b>Mã đặt chỗ:</b> <span id="s-ref" style="font-family:var(--font-serif);font-size:18px;color:var(--earth-dark)">—</span></p>
+          <p style="margin:0 0 8px" id="s-unit">—</p>
+          <p style="margin:0 0 8px" id="s-dates">—</p>
+          <p style="margin:0" id="s-total">—</p>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <a class="btn btn-primary" href="bookings.html">Xem đơn đặt</a>
+          <a class="btn btn-outline" href="./">Về trang chủ</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var UI = window.YangUI;
+      UI.injectHeader();
+      UI.injectFooter();
+
+      var params = new URLSearchParams(location.search);
+      var ref = params.get('ref') || '';
+      var id = params.get('id') || '';
+      document.getElementById('s-ref').textContent = ref || '(đang tải…)';
+
+      if (id) {
+        window.YangAPI.get('booking-detail', { id: id }).then(function (j) {
+          if (!j.success || !j.data) return;
+          var b = j.data;
+          document.getElementById('s-ref').textContent = b.booking_reference || ref;
+          document.getElementById('s-unit').innerHTML = '<b>Homestay:</b> ' + UI.esc(b.unit && b.unit.name || '');
+          document.getElementById('s-dates').innerHTML = '<b>' + UI.fmtDate(b.check_in) + ' → ' + UI.fmtDate(b.check_out) + '</b> · ' + b.number_of_nights + ' đêm · ' + b.total_guests + ' khách';
+          document.getElementById('s-total').innerHTML = '<b style="font-size:20px;color:var(--earth-dark)">' + UI.formatVND(b.total_amount) + '</b>';
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

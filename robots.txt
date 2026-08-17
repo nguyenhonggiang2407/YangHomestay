@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /customer/
+Disallow: /backend/
+Disallow: /admin/
+Disallow: /manager/
+Disallow: /staff/
+Disallow: /database/
+Disallow: /tools/
+
+Sitemap: https://yanghomestay.helioho.st/sitemap.xml

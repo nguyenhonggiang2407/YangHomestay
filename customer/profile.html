@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hồ sơ - YangHomestay</title>
+  <meta name="robots" content="noindex,follow">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#1F2923">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+  <header class="site-header" id="site-header"></header>
+
+  <section class="section-tight">
+    <div class="container">
+      <div class="breadcrumb"><a href="./">Trang chủ</a> / Hồ sơ</div>
+      <h1>Hồ sơ của tôi</h1>
+
+      <div class="layout" style="grid-template-columns:1fr 1fr;gap:28px">
+        <!-- INFO -->
+        <div class="form-card wide" style="margin:0">
+          <h2 style="margin-bottom:18px">Thông tin cá nhân</h2>
+          <form id="profile-form" novalidate>
+            <div class="form-group" id="g-full_name">
+              <label for="pf-name">Họ tên</label>
+              <input type="text" id="pf-name" required>
+              <div class="form-error" id="e-full_name"></div>
+            </div>
+            <div class="form-group">
+              <label for="pf-email">Email</label>
+              <input type="email" id="pf-email" disabled>
+              <div class="form-hint">Email không thể thay đổi.</div>
+            </div>
+            <div class="form-group" id="g-phone">
+              <label for="pf-phone">Số điện thoại</label>
+              <input type="tel" id="pf-phone" required>
+              <div class="form-error" id="e-phone"></div>
+            </div>
+            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+          </form>
+        </div>
+
+        <!-- SECURITY -->
+        <div class="form-card wide" style="margin:0">
+          <h2 style="margin-bottom:18px">Đổi mật khẩu</h2>
+          <form id="pwd-form" novalidate>
+            <div class="form-group" id="g-old_password">
+              <label for="pw-old">Mật khẩu cũ</label>
+              <input type="password" id="pw-old" autocomplete="current-password" required>
+              <div class="form-error" id="e-old_password"></div>
+            </div>
+            <div class="form-group" id="g-new_password">
+              <label for="pw-new">Mật khẩu mới</label>
+              <input type="password" id="pw-new" autocomplete="new-password" minlength="8" required>
+              <div class="form-hint">Tối thiểu 6 ký tự.</div>
+              <div class="form-error" id="e-new_password"></div>
+            </div>
+            <div class="form-group" id="g-confirm_password">
+              <label for="pw-confirm">Xác nhận mật khẩu mới</label>
+              <input type="password" id="pw-confirm" autocomplete="new-password" required>
+              <div class="form-error" id="e-confirm_password"></div>
+            </div>
+            <button type="submit" class="btn btn-olive">Đổi mật khẩu</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var UI = window.YangUI;
+      UI.injectHeader();
+      UI.injectFooter();
+
+      UI.checkAuth().then(function (c) {
+        if (!c) { location.href = 'login.html?next=profile.html'; return; }
+        loadProfile();
+      });
+
+      function loadProfile() {
+        window.YangAPI.get('get-profile').then(function (j) {
+          if (!j.success) { UI.handleError(j); return; }
+          var p = j.data;
+          document.getElementById('pf-name').value = p.full_name || '';
+          document.getElementById('pf-email').value = p.email || '';
+          document.getElementById('pf-phone').value = p.phone || '';
+        });
+      }
+
+      document.getElementById('profile-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        window.YangAPI.post('update-profile', {
+          full_name: document.getElementById('pf-name').value.trim(),
+          phone: document.getElementById('pf-phone').value.trim()
+        }).then(function (j) {
+          if (j.success) { UI.toast('Đã lưu thay đổi', 'success'); UI.clearAuthCache(); }
+          else UI.handleError(j);
+        });
+      });
+
+      document.getElementById('pwd-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        window.YangAPI.post('change-password', {
+          old_password: document.getElementById('pw-old').value,
+          new_password: document.getElementById('pw-new').value,
+          confirm_password: document.getElementById('pw-confirm').value
+        }).then(function (j) {
+          if (j.success) {
+            UI.toast('Đổi mật khẩu thành công', 'success');
+            ['pw-old', 'pw-new', 'pw-confirm'].forEach(function (id) { document.getElementById(id).value = ''; });
+          } else UI.handleError(j);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

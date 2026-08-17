@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YangHomestay Admin - Đăng nhập</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+</head>
+<body data-portal="admin">
+  <div class="login-page">
+    <div class="login-card">
+      <div class="brand-mark">Y</div>
+      <h2 class="text-center" style="text-align:center;margin-bottom:4px">YangHomestay Admin</h2>
+      <p style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:24px">Đăng nhập để quản lý hệ thống</p>
+      <form id="login-form" novalidate>
+        <div class="form-group" id="g-identifier">
+          <label for="identifier">Tên đăng nhập hoặc Email</label>
+          <input type="text" id="identifier" autocomplete="username" required>
+          <div class="form-error" id="e-identifier"></div>
+        </div>
+        <div class="form-group" id="g-password">
+          <label for="password">Mật khẩu</label>
+          <input type="password" id="password" autocomplete="current-password" required>
+          <div class="form-error" id="e-password"></div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px" id="btn">Đăng nhập</button>
+      </form>
+      <p style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted)">Chỉ dành cho quản trị viên YangHomestay.</p>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toasts"></div>
+
+  <script src="js/admin-config.js"></script>
+  <script src="js/admin-api.js"></script>
+  <script src="js/admin-login.js"></script>
+</body>
+</html>

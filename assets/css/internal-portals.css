@@ -1,0 +1,20 @@
+/* Internal portal refinements shared by Manager and Staff. */
+.portal-manager .sidebar { background: #273127; }
+.portal-staff .sidebar { background: #28313A; }
+.portal-staff { --earth-dark:#40596A; --olive:#4D687A; --olive-dark:#283C49; --terracotta:#B96F4A; }
+.portal-kicker { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.hero-strip { background:linear-gradient(135deg,#fff,#F4F0E8); border:1px solid var(--line); border-radius:16px; padding:20px; margin-bottom:20px; display:flex; justify-content:space-between; gap:20px; align-items:center; }
+.hero-strip h3 { margin:0 0 6px; }
+.hero-strip p { margin:0; color:var(--muted); }
+.ops-columns { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.ops-list { display:grid; gap:10px; }
+.ops-card { border:1px solid var(--line-soft); border-radius:10px; padding:12px; background:#fff; display:flex; justify-content:space-between; gap:14px; align-items:flex-start; }
+.ops-card .meta { color:var(--muted); font-size:12px; margin-top:4px; }
+.role-pill { display:inline-flex; padding:3px 8px; border-radius:999px; background:var(--surface-alt); color:var(--earth-dark); font-size:11px; font-weight:700; }
+.security-note { border-left:4px solid var(--gold); background:#FFF9ED; padding:12px 14px; border-radius:8px; }
+@media (max-width:800px) { .ops-columns { grid-template-columns:1fr; } .hero-strip { align-items:flex-start; flex-direction:column; } }
+
+.portal-manager .sidebar,.portal-staff .sidebar{background:#18221C}
+.portal-staff{--earth-dark:#4B5D4C;--olive:#4B5D4C;--olive-dark:#1F2923;--terracotta:#A65D3D}
+.hero-strip{background:#fff;border-color:#E6E2DC;border-radius:16px;box-shadow:none}
+.ops-card{border-color:#E6E2DC;border-radius:12px}

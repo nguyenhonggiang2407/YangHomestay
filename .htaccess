@@ -1,0 +1,37 @@
+Options -Indexes
+DirectoryIndex index.php index.html
+RewriteEngine On
+
+# One canonical customer homepage: /customer/
+# Only redirect a browser request for the explicit filename; DirectoryIndex lookup must not loop.
+RewriteCond %{THE_REQUEST} \s/+customer/index\.html(?:[?\s]) [NC]
+RewriteRule ^customer/index\.html$ /customer/ [R=301,L,NE]
+
+# Server-side guard for internal portal dashboard URLs while preserving *.html URLs.
+RewriteRule ^(admin|manager|staff)/index\.html$ backend/portal.php?portal=$1 [L,QSA]
+
+# Production hardening: implementation, migration and diagnostic files are not web endpoints.
+RewriteRule ^(?:database|tools|\.vscode|\.sixth)(?:/|$) - [F,L,NC]
+RewriteRule ^backend/(?:tests|tools|diagnostics|legacy|logs)(?:/|$) - [F,L,NC]
+RewriteRule ^backend/config\.supabase\.(?:local|example)\.php$ - [F,L,NC]
+
+# Never serve credentials, logs, SQL dumps or project notes directly.
+<FilesMatch "(?i)^(?:\.env.*|config\.supabase\.local\.php)$|\.(?:log|sql|md|ps1|bat)$">
+    Require all denied
+</FilesMatch>
+
+# Reasonable cache policy for static assets; HTML stays revalidatable during deploys.
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/png "access plus 30 days"
+    ExpiresByType image/webp "access plus 30 days"
+    ExpiresByType image/svg+xml "access plus 30 days"
+    ExpiresByType text/css "access plus 7 days"
+    ExpiresByType application/javascript "access plus 7 days"
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

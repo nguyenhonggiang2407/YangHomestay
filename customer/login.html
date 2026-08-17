@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập - YangHomestay</title>
+  <meta name="robots" content="noindex,follow">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#1F2923">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+  <header class="site-header" id="site-header"></header>
+
+  <section class="section">
+    <div class="container">
+      <div class="auth-wrap">
+        <div class="auth-media">
+          <img src="../assets/images/homestays/truc-bach-lake-view-studio/cover.jpg" alt="Một góc homestay Hà Nội" loading="lazy" onerror="this.onerror=null;this.src='../assets/images/homestays/fallback/unit-fallback.jpg'">
+          <div class="auth-quote">“Ở đúng gu,<br>sống đúng chất Hà Nội.”</div>
+        </div>
+      <div class="form-card">
+        <div class="text-center" style="margin-bottom:22px">
+          <span class="brand-mark" style="margin:0 auto 10px">Y</span>
+          <h2 style="margin-bottom:4px">Đăng nhập YangHomestay</h2>
+          <p style="color:var(--earth-light);font-size:14px">Ở đúng gu, sống đúng chất Hà Nội.</p>
+        </div>
+        <form id="login-form" novalidate>
+          <div class="form-group" id="g-email">
+            <label for="email">Email</label>
+            <input type="email" id="email" autocomplete="email" required>
+            <div class="form-error" id="e-email"></div>
+          </div>
+          <div class="form-group" id="g-password">
+            <label for="password">Mật khẩu</label>
+            <input type="password" id="password" autocomplete="current-password" required>
+            <div class="form-error" id="e-password"></div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn">Đăng nhập</button>
+        </form>
+        <p class="auth-alt">Chưa có tài khoản? <a href="register.html">Đăng ký ngay</a></p>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var UI = window.YangUI;
+      UI.injectHeader();
+      UI.injectFooter();
+
+      document.getElementById('login-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var btn = document.getElementById('btn');
+        if (btn.disabled) return;
+        btn.disabled = true; btn.textContent = 'Đang đăng nhập…';
+        window.YangAPI.post('login', {
+          email: document.getElementById('email').value.trim(),
+          password: document.getElementById('password').value
+        }).then(function (j) {
+          if (j.success) {
+            UI.setCustomer(j.data);
+            UI.toast('Đăng nhập thành công', 'success');
+            var next = new URLSearchParams(location.search).get('next');
+            setTimeout(function () { location.href = next || 'index.html'; }, 500);
+          } else {
+            btn.disabled = false; btn.textContent = 'Đăng nhập';
+            UI.handleError(j);
+            if (j.errors) {
+              Object.keys(j.errors).forEach(function (k) {
+                var g = document.getElementById('g-' + k);
+                var err = document.getElementById('e-' + k);
+                if (g && err) { g.classList.add('has-error'); err.textContent = j.errors[k]; }
+              });
+            }
+          }
+        }).catch(function () {
+          btn.disabled = false; btn.textContent = 'Đăng nhập';
+          UI.toast('Không kết nối được máy chủ', 'error');
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YangHomestay Admin</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+</head>
+<body data-portal="admin">
+  <div class="admin-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <span class="brand-mark" style="width:36px;height:36px;border-radius:10px;background:var(--olive-dark);display:flex;align-items:center;justify-content:center;font-size:16px">Y</span>
+        <span>YangHomestay<small>Super Admin</small></span>
+      </div>
+      <nav id="side-nav">
+        <button type="button" data-sec="dashboard" class="active">Dashboard</button>
+        <button type="button" data-sec="calendar">Lịch đặt phòng</button>
+        <button type="button" data-sec="properties">Homestay</button>
+        <button type="button" data-sec="units">Căn homestay</button>
+        <button type="button" data-sec="bookings">Đặt phòng</button>
+        <button type="button" data-sec="customers">Khách hàng</button>
+        <button type="button" data-sec="reviews">Đánh giá</button>
+        <button type="button" data-sec="pricing">Giá</button>
+        <button type="button" data-sec="promotions">Ưu đãi</button>
+        <button type="button" data-sec="revenue">Doanh thu</button>
+        <button type="button" data-sec="contacts">Liên hệ</button>
+        <button type="button" data-sec="personnel">Nhân sự</button>
+        <button type="button" data-sec="audit">Audit Logs</button>
+        <button type="button" data-sec="settings">Cài đặt</button>
+      </nav>
+      <div class="side-foot">
+        <div id="admin-info" style="margin-bottom:8px">…</div>
+        <button type="button" id="btn-logout" class="logout-btn">Đăng xuất</button>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menu-btn">☰</button>
+        <h2 id="page-title">Dashboard</h2>
+        <div class="admin-user" id="admin-user"></div>
+      </header>
+      <main class="content" id="content">
+        <div class="state-box"><span class="emoji">⏳</span><div class="skeleton" style="height:40px;max-width:300px;margin:0 auto"></div></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/admin-config.js"></script>
+  <script src="js/admin-api.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

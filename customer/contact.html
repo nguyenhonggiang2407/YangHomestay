@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liên hệ - YangHomestay</title>
+  <meta name="description" content="Liên hệ YangHomestay để được hỗ trợ về tìm căn, yêu cầu đặt chỗ và kỳ nghỉ tại Hà Nội.">
+  <link rel="canonical" href="https://yanghomestay.helioho.st/customer/contact.html">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#1F2923">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+  <header class="site-header" id="site-header"></header>
+
+  <section class="section">
+    <div class="container">
+      <div class="text-center" style="margin-bottom:30px">
+        <span class="eyebrow">Liên hệ</span>
+        <h1>Chúng tôi luôn sẵn sàng hỗ trợ</h1>
+        <p class="lead">Bạn có câu hỏi về homestay, đặt chỗ hay cần tư vấn? Gửi tin nhắn cho chúng tôi.</p>
+      </div>
+      <div class="auth-wrap">
+        <div class="auth-media">
+          <img src="../assets/images/homestays/ba-dinh-family-apartment/cover.jpg" alt="Không gian homestay ấm cúng" loading="lazy" onerror="this.onerror=null;this.src='../assets/images/homestays/fallback/unit-fallback.jpg'">
+          <div class="auth-quote">Luôn sẵn sàng giúp bạn có kỳ nghỉ trọn vẹn.</div>
+        </div>
+      <div class="form-card">
+        <form id="contact-form" novalidate>
+          <div class="form-group" id="g-full_name">
+            <label for="full_name">Họ tên</label>
+            <input type="text" id="full_name" maxlength="100" required>
+            <div class="form-error" id="e-full_name"></div>
+          </div>
+          <div class="form-group" id="g-email">
+            <label for="email">Email</label>
+            <input type="email" id="email" maxlength="100" required>
+            <div class="form-error" id="e-email"></div>
+          </div>
+          <div class="form-group" id="g-phone">
+            <label for="phone">Số điện thoại (tùy chọn)</label>
+            <input type="tel" id="phone" maxlength="15">
+            <div class="form-error" id="e-phone"></div>
+          </div>
+          <div class="form-group" id="g-subject">
+            <label for="subject">Tiêu đề</label>
+            <input type="text" id="subject" maxlength="150" required>
+            <div class="form-error" id="e-subject"></div>
+          </div>
+          <div class="form-group" id="g-message">
+            <label for="message">Nội dung</label>
+            <textarea id="message" maxlength="3000" required></textarea>
+            <div class="form-error" id="e-message"></div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn">Gửi tin nhắn</button>
+        </form>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="faq"><div class="container"><div class="section-head"><span class="eyebrow">Hỗ trợ</span><h2>Câu hỏi thường gặp</h2></div><div class="grid grid-3"><div class="feature"><h3>Tôi có thể hủy đặt phòng?</h3><p>Tùy điều kiện của từng đơn đặt. Hãy mở chi tiết booking hoặc liên hệ YangHomestay để được hỗ trợ.</p></div><div class="feature"><h3>Khi nào booking được xác nhận?</h3><p>Trạng thái được hiển thị trong mục Đơn đặt của tôi sau khi hệ thống xử lý yêu cầu.</p></div><div class="feature"><h3>Giá hiển thị gồm những gì?</h3><p>Bảng giá trước khi gửi yêu cầu sẽ thể hiện giá phòng, phí vệ sinh, giảm giá (nếu có) và tổng dự kiến theo dữ liệu hệ thống.</p></div></div></div></section>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var UI = window.YangUI;
+      UI.injectHeader();
+      UI.injectFooter();
+
+      document.getElementById('contact-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var btn = document.getElementById('btn');
+        btn.disabled = true; btn.textContent = 'Đang gửi…';
+        window.YangAPI.post('contact', {
+          full_name: document.getElementById('full_name').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
+          subject: document.getElementById('subject').value.trim(),
+          message: document.getElementById('message').value.trim()
+        }).then(function (j) {
+          if (j.success) {
+            UI.toast(j.message || 'Cảm ơn bạn!', 'success');
+            document.getElementById('contact-form').reset();
+          } else {
+            UI.handleError(j);
+          }
+          btn.disabled = false; btn.textContent = 'Gửi tin nhắn';
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

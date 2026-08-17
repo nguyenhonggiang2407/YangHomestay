@@ -1,0 +1,27 @@
+# Secrets / local config
+.env
+.env.*
+!.env.example
+backend/config.supabase.local.php
+config.supabase.local.php
+
+# Logs
+*.log
+backend/logs/
+backend/diagnostics/tmp/
+
+# Archives
+*.zip
+*.rar
+*.7z
+
+# Temporary files
+*.tmp
+*.bak
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.sixth/

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YangHomestay Manager - Đăng nhập</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="../admin/css/admin.css">
+  <link rel="stylesheet" href="../assets/css/internal-portals.css">
+</head>
+<body class="portal-manager" data-portal="manager">
+  <div class="login-page"><div class="login-card">
+    <div class="brand-mark">Y</div>
+    <div class="portal-kicker" style="text-align:center">Quản lý vận hành</div>
+    <h2 style="text-align:center;margin-bottom:6px">YangHomestay Manager</h2>
+    <p style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:24px">Cổng dành cho quản lý homestay</p>
+    <form id="login-form" novalidate>
+      <div class="form-group"><label for="identifier">Tên đăng nhập hoặc Email</label><input type="text" id="identifier" autocomplete="username" required></div>
+      <div class="form-group"><label for="password">Mật khẩu</label><input type="password" id="password" autocomplete="current-password" required></div>
+      <button type="submit" class="btn btn-primary" style="width:100%;padding:12px" id="btn">Đăng nhập</button>
+    </form>
+  </div></div>
+  <div class="toast-wrap" id="toasts"></div>
+  <script src="../admin/js/admin-config.js"></script>
+  <script src="../admin/js/admin-api.js"></script>
+  <script src="../admin/js/admin-login.js"></script>
+</body>
+</html>

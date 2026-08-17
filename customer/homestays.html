@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homestay Hà Nội - YangHomestay</title>
+  <link rel="canonical" href="https://yanghomestay.helioho.st/customer/homestays.html">
+  <meta name="description" content="Tìm homestay tại Hà Nội: studio, căn hộ, loft phù hợp với gu của bạn.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#1F2923">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+  <header class="site-header" id="site-header"></header>
+
+  <section class="section-tight">
+    <div class="container">
+      <div class="breadcrumb"><a href="./">Trang chủ</a> / Homestay</div>
+      <h1>Homestay tại Hà Nội</h1>
+      <p class="lead">Lọc theo khu vực, giá, số khách và ngày ở — giá luôn hiển thị trước khi bạn đặt.</p>
+    </div>
+  </section>
+
+  <section class="section-tight" style="padding-top:0">
+    <div class="container">
+      <div class="list-layout">
+        <!-- FILTERS -->
+        <aside class="filter-panel">
+          <div class="filter-group">
+            <h2 class="filter-heading">Khu vực</h2>
+            <label><input type="radio" name="district" value=""> Tất cả</label>
+            <label><input type="radio" name="district" value="Hoàn Kiếm"> Hoàn Kiếm</label>
+            <label><input type="radio" name="district" value="Ba Đình"> Ba Đình</label>
+            <label><input type="radio" name="district" value="Tây Hồ"> Tây Hồ</label>
+            <label><input type="radio" name="district" value="Đống Đa"> Đống Đa</label>
+            <label><input type="radio" name="district" value="Cầu Giấy"> Cầu Giấy</label>
+          </div>
+          <div class="filter-group">
+            <h2 class="filter-heading">Loại căn</h2>
+            <label><input type="radio" name="type" value=""> Tất cả</label>
+            <label><input type="radio" name="type" value="studio"> Studio</label>
+            <label><input type="radio" name="type" value="apartment"> Căn hộ</label>
+            <label><input type="radio" name="type" value="loft"> Loft</label>
+            <label><input type="radio" name="type" value="couple"> Căn đôi</label>
+            <label><input type="radio" name="type" value="family"> Căn gia đình</label>
+          </div>
+          <div class="filter-group">
+            <h2 class="filter-heading">Ngày ở</h2>
+            <div class="date-fields">
+              <label class="sr-only" for="f-checkin">Nhận phòng</label><input type="date" id="f-checkin" aria-describedby="filter-error">
+              <label class="sr-only" for="f-checkout">Trả phòng</label><input type="date" id="f-checkout" aria-describedby="filter-error">
+            </div>
+          </div>
+          <div class="filter-group">
+            <h2 class="filter-heading">Số khách</h2>
+            <label class="sr-only" for="f-guests">Số khách</label><select id="f-guests">
+              <option value="">Bất kỳ</option>
+              <option>1</option><option>2</option><option>3</option>
+              <option>4</option><option>5</option><option>6</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <h2 class="filter-heading">Giá mỗi đêm (₫)</h2>
+            <div class="price-range">
+              <label class="sr-only" for="f-min">Giá tối thiểu</label><input type="number" id="f-min" placeholder="Tối thiểu" min="0" step="50000" inputmode="numeric">
+              <label class="sr-only" for="f-max">Giá tối đa</label><input type="number" id="f-max" placeholder="Tối đa" min="0" step="50000" inputmode="numeric">
+            </div>
+          </div>
+          <div class="filter-group">
+            <h2 class="filter-heading">Trải nghiệm</h2>
+            <label><input type="radio" name="tag" value=""> Tất cả</label>
+            <label><input type="radio" name="tag" value="couple"> Hai người</label>
+            <label><input type="radio" name="tag" value="quiet"> Bình yên</label>
+            <label><input type="radio" name="tag" value="old-quarter"> Phố cổ</label>
+            <label><input type="radio" name="tag" value="lake-view"> View đẹp</label>
+            <label><input type="radio" name="tag" value="workcation"> Workcation</label>
+            <label><input type="radio" name="tag" value="food-lover"> Tiện khám phá ẩm thực</label>
+          </div>
+          <div id="filter-error" class="form-error" role="alert" aria-live="polite"></div>
+          <button type="button" class="btn btn-primary btn-block" id="btn-apply">Áp dụng bộ lọc</button>
+          <button type="button" class="btn btn-ghost btn-block mt-4" id="btn-clear">Xóa bộ lọc</button>
+        </aside>
+
+        <!-- RESULTS -->
+        <div>
+          <div class="results-head">
+            <div id="result-count" role="status" aria-live="polite">Đang tải…</div>
+            <label class="sr-only" for="f-sort">Sắp xếp</label><select id="f-sort" class="search-field" style="max-width:200px" aria-label="Sắp xếp kết quả">
+              <option value="price_asc">Giá thấp → cao</option>
+              <option value="price_desc">Giá cao → thấp</option>
+              <option value="rating">Đánh giá cao</option>
+              <option value="newest">Mới nhất</option>
+            </select>
+          </div>
+          <div class="grid grid-3" id="results"></div>
+          <div class="pagination" id="pagination"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var UI = window.YangUI;
+      UI.injectHeader();
+      UI.injectFooter();
+
+      var params = new URLSearchParams(location.search);
+      var state = {
+        page: 1,
+        district: params.get('district') || '',
+        type: params.get('type') || '',
+        tag: params.get('tag') || '',
+        check_in: params.get('check_in') || '',
+        check_out: params.get('check_out') || '',
+        guests: params.get('guests') || '',
+        min_price: params.get('min_price') || '',
+        max_price: params.get('max_price') || '',
+        sort: params.get('sort') || 'price_asc'
+      };
+
+      // seed filters from URL
+      if (state.district) {
+        var dr = document.querySelector('input[name="district"][value="' + state.district + '"]');
+        if (dr) dr.checked = true;
+      }
+      if (state.tag) {
+        var tr = document.querySelector('input[name="tag"][value="' + state.tag + '"]');
+        if (tr) tr.checked = true;
+      }
+      if (state.check_in) document.getElementById('f-checkin').value = state.check_in;
+      if (state.check_out) document.getElementById('f-checkout').value = state.check_out;
+      if (state.guests) document.getElementById('f-guests').value = state.guests;
+      if (state.type) { var ty = document.querySelector('input[name="type"][value="' + state.type + '"]'); if (ty) ty.checked = true; }
+      if (state.min_price) document.getElementById('f-min').value = state.min_price;
+      if (state.max_price) document.getElementById('f-max').value = state.max_price;
+      if (['price_asc','price_desc','rating','newest'].indexOf(state.sort) !== -1) document.getElementById('f-sort').value = state.sort;
+
+      var today = UI.localDateISO();
+      document.getElementById('f-checkin').min = today;
+      document.getElementById('f-checkout').min = state.check_in ? UI.addDaysISO(state.check_in, 1) : UI.addDaysISO(today, 1);
+
+      function collect() {
+        state.district = (document.querySelector('input[name="district"]:checked') || {}).value || '';
+        state.type = (document.querySelector('input[name="type"]:checked') || {}).value || '';
+        state.tag = (document.querySelector('input[name="tag"]:checked') || {}).value || '';
+        state.check_in = document.getElementById('f-checkin').value;
+        state.check_out = document.getElementById('f-checkout').value;
+        state.guests = document.getElementById('f-guests').value;
+        state.min_price = document.getElementById('f-min').value;
+        state.max_price = document.getElementById('f-max').value;
+        state.sort = document.getElementById('f-sort').value;
+      }
+
+      function validateFilters() {
+        var dateError = UI.validateDateRange(state.check_in, state.check_out);
+        var min = state.min_price === '' ? null : Number(state.min_price);
+        var max = state.max_price === '' ? null : Number(state.max_price);
+        var msg = dateError;
+        if (!msg && (min !== null && min < 0 || max !== null && max < 0)) msg = 'Khoảng giá không hợp lệ.';
+        if (!msg && min !== null && max !== null && min > max) msg = 'Giá tối thiểu không được lớn hơn giá tối đa.';
+        document.getElementById('filter-error').textContent = msg || '';
+        return !msg;
+      }
+
+      function syncUrl() {
+        var out = new URLSearchParams();
+        ['district','type','tag','check_in','check_out','guests','min_price','max_price','sort'].forEach(function (key) {
+          if (state[key] && !(key === 'sort' && state[key] === 'price_asc')) out.set(key, state[key]);
+        });
+        var next = location.pathname + (out.toString() ? '?' + out.toString() : '');
+        history.replaceState(null, '', next);
+      }
+
+      function renderLoadError(box, message) {
+        box.innerHTML = '<div class="state-box"><h3>Chưa tải được danh sách</h3><p>' + UI.esc(message || 'Vui lòng thử lại.') + '</p><button type="button" class="btn btn-primary" id="results-retry">Thử lại</button></div>';
+        var retry = document.getElementById('results-retry');
+        if (retry) retry.addEventListener('click', load);
+      }
+
+      function load() {
+        if (!validateFilters()) return;
+        syncUrl();
+        var box = document.getElementById('results');
+        box.innerHTML = UI.skeletonCard() + UI.skeletonCard() + UI.skeletonCard();
+        var q = {
+          page: state.page, limit: 12, sort: state.sort,
+          district: state.district, type: state.type, tag: state.tag,
+          check_in: state.check_in, check_out: state.check_out,
+          guests: state.guests, min_price: state.min_price, max_price: state.max_price
+        };
+        window.YangAPI.get('units', q).then(function (j) {
+          if (!j.success) {
+            renderLoadError(box, j.message || 'Vui lòng thử lại.');
+            document.getElementById('result-count').textContent = 'Không thể tải kết quả';
+            return;
+          }
+          var items = j.data.items || [];
+          var pg = j.data.pagination || {};
+          document.getElementById('result-count').textContent = pg.total + ' căn homestay';
+          if (!items.length) {
+            box.innerHTML = '<div class="state-box"><span class="emoji">🔍</span><h3>Không tìm thấy căn phù hợp</h3>' +
+              '<p>Thử thay đổi ngày hoặc xóa bộ lọc.</p>' +
+              '<div style="margin-top:14px"><button class="btn btn-primary" type="button" id="empty-clear">Xóa bộ lọc</button></div></div>';
+            document.getElementById('empty-clear').addEventListener('click', function () { clearFilters(); });
+          } else {
+            box.innerHTML = items.map(UI.unitCard).join('');
+          }
+          renderPagination(pg);
+          bindHearts();
+        }).catch(function () {
+          renderLoadError(box, 'Không kết nối được máy chủ.');
+          document.getElementById('result-count').textContent = 'Không thể tải kết quả';
+        });
+      }
+
+      function renderPagination(pg) {
+        var el = document.getElementById('pagination');
+        if (!pg.total_pages || pg.total_pages <= 1) { el.innerHTML = ''; return; }
+        var html = '';
+        for (var i = 1; i <= pg.total_pages; i++) {
+          html += '<button type="button" class="page-btn' + (i === state.page ? ' active' : '') + '" data-page="' + i + '">' + i + '</button>';
+        }
+        el.innerHTML = html;
+        el.querySelectorAll('.page-btn').forEach(function (b) {
+          b.addEventListener('click', function () {
+            state.page = Number(b.getAttribute('data-page'));
+            load();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+        });
+      }
+
+      function bindHearts() {
+        document.querySelectorAll('.heart-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var unitId = btn.getAttribute('data-unit');
+            UI.checkAuth().then(function (c) {
+              if (!c) { location.href = 'login.html?next=' + encodeURIComponent('unit-detail.html?id=' + unitId); return; }
+              window.YangAPI.post('add-favorite', { unit_id: Number(unitId) }).then(function (j) {
+                if (j.success) { btn.classList.add('active'); btn.textContent = '♥'; UI.toast(j.message || 'Đã thêm vào yêu thích', 'success'); }
+                else UI.handleError(j);
+              });
+            });
+          });
+        });
+      }
+
+      function clearFilters() {
+        document.querySelectorAll('input[name="district"],input[name="type"],input[name="tag"]').forEach(function (r) { r.checked = false; });
+        ['f-checkin', 'f-checkout', 'f-guests', 'f-min', 'f-max'].forEach(function (id) { document.getElementById(id).value = ''; });
+        state.page = 1;
+        collect();
+        load();
+      }
+
+      document.getElementById('btn-apply').addEventListener('click', function () { state.page = 1; collect(); load(); });
+      document.getElementById('f-checkin').addEventListener('change', function () { var v = this.value; document.getElementById('f-checkout').min = v ? UI.addDaysISO(v, 1) : UI.addDaysISO(UI.localDateISO(), 1); });
+      document.getElementById('btn-clear').addEventListener('click', clearFilters);
+      document.getElementById('f-sort').addEventListener('change', function () { state.page = 1; collect(); load(); });
+
+      collect();
+      load();
+    })();
+  </script>
+</body>
+</html>

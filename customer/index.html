@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YangHomestay | Homestay Hà Nội đúng gu của bạn</title>
+  <link rel="canonical" href="https://yanghomestay.helioho.st/customer/">
+  <meta name="description" content="Khám phá và đặt homestay tại Hà Nội cùng YangHomestay. Tìm studio, căn hộ và những nơi ở phù hợp với gu của bạn.">
+  <meta property="og:title" content="YangHomestay - Đặt Homestay Hà Nội">
+  <meta property="og:description" content="Ở đúng gu, sống đúng chất Hà Nội.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yanghomestay.helioho.st/customer/">
+  <meta property="og:image" content="https://yanghomestay.helioho.st/assets/images/homestays/hero-hanoi-boutique.jpg">
+  <meta name="theme-color" content="#1F2923">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="site-header" id="site-header"></header>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <img class="hero-bg" src="../assets/images/homestays/hero-hanoi-boutique.jpg" alt="Phòng khách boutique ấm áp trong một căn homestay tại Hà Nội" fetchpriority="high" onerror="this.onerror=null;this.src='../assets/images/homestays/fallback/unit-fallback.jpg'">
+    <div class="hero-overlay"></div>
+    <div class="container hero-inner">
+      <span class="hero-kicker">HÀ NỘI · CURATED STAYS</span>
+      <h1>Ở đúng gu,<br><em>sống đúng chất Hà Nội.</em></h1>
+      <p class="sub">Những căn ở được tuyển chọn tại Phố Cổ, Hồ Tây, Ba Đình — rõ giá, đúng nhu cầu và dễ đặt cho từng kiểu chuyến đi.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-light btn-lg" href="#search">Khám phá homestay</a>
+        <a class="btn btn-hero-ghost btn-lg" href="yangmatch.html">Tìm căn hợp gu <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="hero-proof" aria-label="Điểm nổi bật"><span><b>01</b> Vị trí dễ khám phá</span><span><b>02</b> Giá hiển thị rõ ràng</span><span><b>03</b> YangMatch gợi ý theo gu</span></div>
+    </div>
+  </section>
+
+  <!-- SEARCH -->
+  <div class="container">
+    <form class="search-box" id="search" action="homestays.html" method="get">
+      <div class="search-grid">
+        <div class="search-field">
+          <label for="s-district">Khu vực</label>
+          <select id="s-district" name="district">
+            <option value="">Tất cả khu vực</option>
+            <option>Hoàn Kiếm</option>
+            <option>Ba Đình</option>
+            <option>Tây Hồ</option>
+            <option>Đống Đa</option>
+            <option>Cầu Giấy</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label for="s-checkin">Nhận phòng</label>
+          <input type="date" id="s-checkin" name="check_in">
+        </div>
+        <div class="search-field">
+          <label for="s-checkout">Trả phòng</label>
+          <input type="date" id="s-checkout" name="check_out">
+        </div>
+        <div class="search-field">
+          <label for="s-guests">Khách</label>
+          <select id="s-guests" name="guests">
+            <option value="">Bất kỳ</option>
+            <option>1</option><option>2</option><option>3</option>
+            <option>4</option><option>5</option><option>6</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg">Tìm kiếm</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- FEATURED -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Được chọn lọc</span>
+        <h2>Homestay nổi bật</h2>
+        <p class="lead">Những căn được khách yêu thích nhất — từ studio ban công giữa Phố Cổ đến căn hộ view hồ Tây.</p>
+      </div>
+      <div class="grid grid-3" id="featured-units"></div>
+    </div>
+  </section>
+
+  <!-- DISTRICTS -->
+  <section class="section section-alt" id="districts">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Khám phá Hà Nội</span>
+        <h2>Chọn khu vực bạn muốn sống</h2>
+        <p class="lead">Mỗi quận một nhịp sống riêng — tìm góc Hà Nội hợp với cách bạn muốn trải nghiệm.</p>
+      </div>
+      <div class="grid grid-5" id="district-grid"></div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCES -->
+  <section class="section" id="experiences">
+    <div class="container">
+      <div class="section-head center">
+        <span class="eyebrow">Trải nghiệm Hà Nội</span>
+        <h2>Chọn nhịp Hà Nội hợp với chuyến đi của bạn</h2>
+        <p class="lead">Chọn một gu ở để tìm căn phù hợp, hoặc mở cẩm nang ẩm thực để trải nghiệm Hà Nội đúng chất địa phương.</p>
+      </div>
+      <div class="grid grid-3" id="exp-grid"></div>
+    </div>
+  </section>
+
+  <!-- YANGMATCH FEATURE -->
+  <section class="section yangmatch-feature">
+    <div class="container yangmatch-feature-inner">
+      <div><span class="eyebrow">Tính năng riêng của YangHomestay</span><h2>Không biết chọn căn nào? <em>Để YangMatch hiểu gu của bạn.</em></h2><p class="lead">Bốn câu hỏi ngắn về người đi cùng, phong cách, tiện nghi và ngân sách. Kết quả được đối chiếu với dữ liệu căn, tiện nghi, phong cách và mức giá trong hệ thống.</p><a class="btn btn-accent btn-lg" href="yangmatch.html">Bắt đầu YangMatch →</a></div>
+      <div class="yangmatch-visual"><span class="match-chip">Cặp đôi</span><span class="match-chip">Ban công</span><span class="match-chip">Vintage Hà Nội</span><span class="match-chip">≤ 1,2 triệu/đêm</span><div class="match-result"><small>Gợi ý dành cho bạn</small><b>3 căn hợp gu nhất</b><span>Dựa trên sở thích & ngân sách</span></div></div>
+    </div>
+  </section>
+
+  <!-- WHY -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-head center">
+        <span class="eyebrow">Vì sao YangHomestay</span>
+        <h2>Ở không chỉ là một nơi để ngủ</h2>
+      </div>
+      <div class="grid grid-3">
+        <div class="feature">
+          <div class="ico ico-line">01</div>
+          <h3>Thông tin rõ ràng</h3>
+          <p style="color:var(--charcoal-soft);font-size:14px">Sức chứa, số giường, tiện nghi, ảnh và khu vực được trình bày nhất quán để bạn dễ quyết định.</p>
+        </div>
+        <div class="feature">
+          <div class="ico ico-line">02</div>
+          <h3>Giá minh bạch</h3>
+          <p style="color:var(--charcoal-soft);font-size:14px">Giá từng đêm rõ ràng, không phí ẩn. Tổng tiền hiển thị trước khi bạn đặt.</p>
+        </div>
+        <div class="feature">
+          <div class="ico ico-line">03</div>
+          <h3>Đúng gu của bạn</h3>
+          <p style="color:var(--charcoal-soft);font-size:14px">YangMatch gợi ý căn phù hợp với cách bạn đi — cùng ai, thích gì, ngân sách bao nhiêu.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="section" id="reviews">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Khách hàng nói gì</span>
+        <h2>Điểm đánh giá sau lưu trú</h2>
+      </div>
+      <div class="grid grid-3" id="home-reviews"></div>
+    </div>
+  </section>
+
+  <!-- STORY -->
+  <section class="section section-tight" id="story">
+    <div class="container">
+      <div class="story-block">
+        <div class="story-media"><img src="../assets/images/homestays/old-quarter-balcony-studio/cover.jpg" alt="Những căn homestay YangHomestay giữa lòng Hà Nội" loading="lazy" onerror="this.onerror=null;this.src='../assets/images/homestays/fallback/unit-fallback.jpg'"></div>
+        <div class="story-text">
+        <span class="eyebrow">Câu chuyện thương hiệu</span>
+        <p>YangHomestay không chỉ giúp bạn tìm một nơi để ngủ.</p>
+        <p>Chúng tôi giúp bạn tìm một góc Hà Nội phù hợp với cách bạn muốn trải nghiệm thành phố này.</p>
+        <p>Một căn nhỏ giữa Phố Cổ. Một buổi chiều bên Hồ Tây. Một ban công ở Trúc Bạch. Hay một góc yên tĩnh để làm việc giữa lòng Hà Nội.</p>
+        <p style="margin-bottom:0"><b>Mỗi chuyến đi đều khác nhau. Nơi bạn ở cũng nên như vậy.</b></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section section-tight">
+    <div class="container text-center">
+      <h2>Sẵn sàng tìm căn hợp gu?</h2>
+      <p class="lead" style="margin-bottom:20px">Trả lời 4 câu hỏi nhanh, YangMatch sẽ gợi ý căn phù hợp với bạn.</p>
+      <a class="btn btn-olive btn-lg" href="yangmatch.html">Tìm căn hợp gu →</a>
+    </div>
+  </section>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var UI = window.YangUI;
+      UI.injectHeader();
+      UI.injectFooter();
+
+      // Date validation dùng local timezone (tránh lỗi lệch ngày do UTC).
+      var searchForm = document.getElementById('search');
+      var ci = document.getElementById('s-checkin');
+      var co = document.getElementById('s-checkout');
+      var today = UI.localDateISO();
+      if (ci) {
+        ci.min = today;
+        ci.addEventListener('change', function () {
+          co.min = ci.value ? UI.addDaysISO(ci.value, 1) : UI.addDaysISO(today, 1);
+          if (co.value && co.value <= ci.value) co.value = '';
+        });
+      }
+      if (co) co.min = UI.addDaysISO(today, 1);
+      if (searchForm) {
+        searchForm.addEventListener('submit', function (e) {
+          var msg = UI.validateDateRange(ci.value, co.value);
+          if (msg) { e.preventDefault(); UI.toast(msg, 'error'); }
+        });
+      }
+
+      function loadFeatured() {
+        var box = document.getElementById('featured-units');
+        box.innerHTML = UI.skeletonCard() + UI.skeletonCard() + UI.skeletonCard();
+        window.YangAPI.get('units', { featured: 'true', sort: 'newest', limit: 6 }).then(function (j) {
+          if (!j.success) { box.innerHTML = '<div class="state-box"><h3>Chưa tải được danh sách</h3><p>' + UI.esc(j.message || '') + '</p></div>'; return; }
+          var items = j.data.items || [];
+          box.innerHTML = items.length
+            ? items.map(UI.unitCard).join('')
+            : '<div class="state-box"><h3>Chưa có homestay nổi bật</h3><p>Hãy quay lại sau khi danh sách được cập nhật.</p></div>';
+          bindHearts();
+        }).catch(function () {
+          box.innerHTML = '<div class="state-box"><h3>Không kết nối được máy chủ</h3><p>Vui lòng thử lại sau.</p></div>';
+        });
+      }
+
+      // Khu vực chỉ lọc theo district. Không trộn thêm tag trải nghiệm để tránh
+      // bỏ sót homestay đúng quận (lỗi cũ: Đống Đa bị ép sang "food-lover").
+      var DISTRICTS = [
+        { name: 'Hoàn Kiếm', icon: 'building', desc: 'Phố Cổ, hồ Gươm và những con phố đi bộ', image: 'assets/images/areas/old-quarter.jpg' },
+        { name: 'Ba Đình', icon: 'leaf', desc: 'Nhiều cây xanh, yên tĩnh và gần khu trung tâm', image: 'assets/images/homestays/hanoi-exterior/hanoi-apartment-exterior.jpg' },
+        { name: 'Tây Hồ', icon: 'lake', desc: 'Thoáng đãng, cafe đẹp và nhịp sống bên hồ', image: 'assets/images/areas/west-lake.jpg' },
+        { name: 'Đống Đa', icon: 'building', desc: 'Nhịp sống địa phương, nhiều hàng quán và kết nối thuận tiện', image: 'assets/images/homestays/dong-da-urban-loft/cover.jpg' },
+        { name: 'Cầu Giấy', icon: 'briefcase', desc: 'Hiện đại, tiện làm việc và ở dài ngày', image: 'assets/images/homestays/cau-giay-business-apartment/cover.jpg' }
+      ];
+      function loadDistricts() {
+        document.getElementById('district-grid').innerHTML = DISTRICTS.map(function (d) {
+          var img = window.assetUrl(d.image);
+          return '<a class="district-card" href="homestays.html?district=' + encodeURIComponent(d.name) + '">' +
+                 '<div class="district-media"><img src="' + img + '" alt="' + UI.esc(d.name) + ', Hà Nội" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=window.assetUrl(\'assets/images/homestays/fallback/property-fallback.jpg\')">' +
+                 '<span class="image-icon">' + UI.icon(d.icon) + '</span></div>' +
+                 '<div class="district-body"><b>' + d.name + '</b><span>' + d.desc + '</span></div></a>';
+        }).join('');
+      }
+
+      // Mỗi card có href + type + slug riêng. Card cẩm nang không còn bị ép
+      // vào homestays.html?tag=... như implementation cũ.
+      var EXPERIENCES = [
+        { label: 'Hai người', icon: 'couple', type: 'stay-filter', slug: 'couple', href: 'homestays.html?tag=couple', sub: 'Những căn ấm cúng cho kỳ nghỉ của hai bạn', image: 'assets/images/homestays/hoan-kiem-couple-studio/cover.jpg' },
+        { label: 'Bình yên', icon: 'leaf', type: 'stay-filter', slug: 'quiet', href: 'homestays.html?tag=quiet', sub: 'Góc tĩnh lặng để nghỉ ngơi giữa lòng Hà Nội', image: 'assets/images/homestays/experiences/quiet-living-room.jpg' },
+        { label: 'Phố Cổ', icon: 'building', type: 'stay-filter', slug: 'old-quarter', href: 'homestays.html?district=' + encodeURIComponent('Hoàn Kiếm') + '&tag=old-quarter', sub: 'Ở gần nhịp phố, đi bộ dễ và có chất Hà Nội', image: 'assets/images/areas/old-quarter.jpg' },
+        { label: 'View thoáng', icon: 'lake', type: 'stay-filter', slug: 'lake-view', href: 'homestays.html?tag=lake-view', sub: 'Không gian nhiều ánh sáng và tầm nhìn ven hồ', image: 'assets/images/areas/west-lake.jpg' },
+        { label: 'Workcation', icon: 'briefcase', type: 'stay-filter', slug: 'workcation', href: 'homestays.html?tag=workcation', sub: 'Bàn làm việc tốt, ở dài ngày thoải mái', image: 'assets/images/homestays/west-lake-workcation-loft/bedroom-workspace.jpg' },
+        { label: 'Ẩm thực Hà Nội', icon: 'food', type: 'guide', slug: 'hanoi-food', href: 'experience-detail.html?slug=hanoi-food', sub: 'Phở, bún chả, cà phê trứng và những vị Hà Nội nên thử', image: 'assets/images/experiences/hanoi-food/hero.jpg' }
+      ];
+      function loadExperiences() {
+        document.getElementById('exp-grid').innerHTML = EXPERIENCES.map(function (e) {
+          var img = window.assetUrl(e.image);
+          return '<a class="exp-card" href="' + UI.esc(e.href) + '" data-type="' + UI.esc(e.type) + '" data-slug="' + UI.esc(e.slug) + '">' +
+                 '<div class="exp-media"><img src="' + img + '" alt="' + UI.esc(e.label) + '" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=window.assetUrl(\'assets/images/homestays/fallback/unit-fallback.jpg\')">' +
+                 '<span class="image-icon">' + UI.icon(e.icon) + '</span></div>' +
+                 '<div class="exp-body"><b>' + e.label + '</b><span>' + UI.esc(e.sub) + '</span></div></a>';
+        }).join('');
+      }
+
+      function loadReviews() {
+        var box = document.getElementById('home-reviews');
+        window.YangAPI.get('units', { sort: 'rating', limit: 6 }).then(function (j) {
+          if (!j.success) {
+            box.innerHTML = '<div class="state-box"><p>Chưa thể tải điểm đánh giá.</p></div>';
+            return;
+          }
+          var items = (j.data && j.data.items ? j.data.items : []).filter(function (u) { return Number(u.review_count) > 0; });
+          if (!items.length) {
+            box.innerHTML = '<div class="state-box"><p>Chưa có đánh giá đã duyệt để hiển thị.</p></div>';
+            return;
+          }
+          box.innerHTML = items.slice(0, 3).map(function (u) {
+            var rating = Number(u.avg_rating) || 0;
+            var stars = '';
+            for (var i = 1; i <= 5; i++) stars += (i <= Math.round(rating)) ? '★' : '☆';
+            return '<article class="review-card">' +
+              '<div class="review-head"><div class="review-avatar" aria-hidden="true">Y</div>' +
+              '<div class="review-name"><b>' + UI.esc(u.name) + '</b><span>' + UI.esc((u.property && u.property.district) || 'Hà Nội') + '</span></div></div>' +
+              '<div class="stars" aria-label="' + rating.toFixed(1) + ' trên 5 sao">' + stars + ' <b>' + rating.toFixed(1) + '</b></div>' +
+              '<p style="font-size:14px;margin:8px 0 0">Tổng hợp từ ' + Number(u.review_count) + ' đánh giá đã được duyệt cho căn này.</p>' +
+              '<a class="card-link" href="unit-detail.html?id=' + u.id + '#review-list">Xem đánh giá →</a>' +
+              '</article>';
+          }).join('');
+        }).catch(function () {
+          box.innerHTML = '<div class="state-box"><p>Chưa thể tải điểm đánh giá lúc này.</p></div>';
+        });
+      }
+
+      function bindHearts() {
+        document.querySelectorAll('.heart-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var unitId = btn.getAttribute('data-unit');
+            UI.checkAuth().then(function (c) {
+              if (!c) { location.href = 'login.html?next=' + encodeURIComponent('unit-detail.html?id=' + unitId); return; }
+              window.YangAPI.post('add-favorite', { unit_id: Number(unitId) }).then(function (j) {
+                if (j.success) { btn.classList.add('active'); btn.textContent = '♥'; UI.toast(j.message || 'Đã thêm vào yêu thích', 'success'); }
+                else UI.handleError(j);
+              });
+            });
+          });
+        });
+      }
+
+      loadFeatured();
+      loadDistricts();
+      loadExperiences();
+      loadReviews();
+    })();
+  </script>
+</body>
+</html>

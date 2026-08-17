@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YangHomestay Manager</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="../admin/css/admin.css">
+  <link rel="stylesheet" href="../assets/css/internal-portals.css">
+</head>
+<body class="portal-manager" data-portal="manager">
+  <div class="admin-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><span class="brand-mark" style="width:36px;height:36px;border-radius:10px;background:var(--olive);display:flex;align-items:center;justify-content:center;color:#fff">Y</span><span>YangHomestay<small>Manager</small></span></div>
+      <nav id="side-nav">
+        <button type="button" data-sec="dashboard" class="active">Tổng quan vận hành</button>
+        <button type="button" data-sec="calendar">Lịch đặt phòng</button>
+        <button type="button" data-sec="bookings">Đơn đặt</button>
+        <button type="button" data-sec="properties">Homestay</button>
+        <button type="button" data-sec="units">Phòng / Unit</button>
+        <button type="button" data-sec="customers">Khách hàng</button>
+        <button type="button" data-sec="reviews">Đánh giá</button>
+        <button type="button" data-sec="pricing">Giá phòng</button>
+        <button type="button" data-sec="promotions">Khuyến mãi</button>
+        <button type="button" data-sec="revenue">Doanh thu</button>
+        <button type="button" data-sec="audit">Audit Logs</button>
+      </nav>
+      <div class="side-foot"><div id="admin-info" style="margin-bottom:8px">…</div><button type="button" id="btn-logout" class="logout-btn">Đăng xuất</button></div>
+    </aside>
+    <div class="main">
+      <header class="topbar"><button class="menu-btn" id="menu-btn">☰</button><h2 id="page-title">Tổng quan vận hành</h2><div class="admin-user" id="admin-user"></div></header>
+      <main class="content" id="content"><div class="state-box">Đang tải…</div></main>
+    </div>
+  </div>
+  <div class="toast-wrap" id="toasts"></div>
+  <script src="../admin/js/admin-config.js"></script>
+  <script src="../admin/js/admin-api.js"></script>
+  <script src="../admin/js/admin.js"></script>
+</body>
+</html>

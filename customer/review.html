@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đánh giá - YangHomestay</title>
+  <meta name="robots" content="noindex,follow">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#1F2923">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+  <header class="site-header" id="site-header"></header>
+
+  <section class="section">
+    <div class="container">
+      <div class="form-card">
+        <div class="text-center" style="margin-bottom:20px">
+          <span style="font-size:44px">💬</span>
+          <h2 style="margin-top:6px">Đánh giá kỳ nghỉ của bạn</h2>
+          <p style="color:var(--earth-light);font-size:14px">Cảm ơn bạn đã ở cùng YangHomestay. Đánh giá sẽ được kiểm duyệt trước khi hiển thị.</p>
+        </div>
+        <form id="review-form" novalidate>
+          <input type="hidden" id="booking_id">
+          <div id="rating-fields"></div>
+          <div class="form-group" id="g-title">
+            <label for="title">Tiêu đề (tùy chọn)</label>
+            <input type="text" id="title" maxlength="255" placeholder="VD: Căn xinh, view hồ tuyệt vời">
+            <div class="form-error" id="e-title"></div>
+          </div>
+          <div class="form-group" id="g-comment">
+            <label for="comment">Nội dung đánh giá (tùy chọn)</label>
+            <textarea id="comment" maxlength="2000" placeholder="Chia sẻ trải nghiệm của bạn…"></textarea>
+            <div class="form-error" id="e-comment"></div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn">Gửi đánh giá</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var UI = window.YangUI;
+      UI.injectHeader();
+      UI.injectFooter();
+
+      var bookingId = Number(new URLSearchParams(location.search).get('booking_id')) || 0;
+      if (!bookingId) { location.href = 'bookings.html'; return; }
+      document.getElementById('booking_id').value = bookingId;
+
+      var FIELDS = [
+        ['overall_rating', 'Tổng thể'],
+        ['cleanliness_rating', 'Vệ sinh'],
+        ['location_rating', 'Vị trí'],
+        ['amenities_rating', 'Tiện nghi'],
+        ['accuracy_rating', 'Đúng với mô tả'],
+        ['communication_rating', 'Giao tiếp'],
+        ['value_rating', 'Giá trị']
+      ];
+
+      document.getElementById('rating-fields').innerHTML = FIELDS.map(function (f) {
+        var stars = '';
+        for (var i = 1; i <= 5; i++) stars += '<button type="button" class="star" data-val="' + i + '" style="background:none;border:none;font-size:26px;color:var(--line);padding:2px">★</button>';
+        return '<div class="form-group" data-field="' + f[0] + '">' +
+          '<label>' + f[1] + '</label>' +
+          '<div class="star-row" style="display:flex;gap:2px">' + stars + '</div>' +
+          '<div class="form-error" id="e-' + f[0] + '"></div></div>';
+      }).join('');
+
+      var ratings = {};
+      document.querySelectorAll('.star-row').forEach(function (row) {
+        var field = row.closest('.form-group').getAttribute('data-field');
+        row.querySelectorAll('.star').forEach(function (s) {
+          s.addEventListener('click', function () {
+            var val = Number(s.getAttribute('data-val'));
+            ratings[field] = val;
+            row.querySelectorAll('.star').forEach(function (x, i) {
+              x.style.color = (i < val) ? 'var(--warn)' : 'var(--line)';
+            });
+          });
+        });
+      });
+
+      document.getElementById('review-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        for (var i = 0; i < FIELDS.length; i++) {
+          if (!ratings[FIELDS[i][0]]) {
+            UI.toast('Vui lòng chọn đủ điểm cho tất cả tiêu chí', 'error');
+            return;
+          }
+        }
+        var btn = document.getElementById('btn');
+        btn.disabled = true; btn.textContent = 'Đang gửi…';
+        var body = { booking_id: bookingId, title: document.getElementById('title').value.trim(), comment: document.getElementById('comment').value.trim() };
+        FIELDS.forEach(function (f) { body[f[0]] = ratings[f[0]]; });
+        window.YangAPI.post('create-review', body).then(function (j) {
+          if (j.success) {
+            UI.toast(j.message || 'Đã gửi đánh giá', 'success');
+            setTimeout(function () { location.href = 'bookings.html'; }, 1000);
+          } else {
+            btn.disabled = false; btn.textContent = 'Gửi đánh giá';
+            UI.handleError(j);
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

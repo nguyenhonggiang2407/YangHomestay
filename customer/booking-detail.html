@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết đơn đặt - YangHomestay</title>
+  <meta name="robots" content="noindex,follow">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#1F2923">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+  <header class="site-header" id="site-header"></header>
+
+  <section class="section-tight" id="app">
+    <div class="container">
+      <div class="breadcrumb"><a href="bookings.html">Đơn đặt của tôi</a> / Chi tiết</div>
+    </div>
+  </section>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var UI = window.YangUI;
+      UI.injectHeader();
+      UI.injectFooter();
+
+      var id = Number(new URLSearchParams(location.search).get('id')) || 0;
+      var app = document.getElementById('app');
+
+      UI.checkAuth().then(function (c) {
+        if (!c) { location.href = 'login.html?next=booking-detail.html%3Fid%3D' + id; return; }
+        window.YangAPI.get('booking-detail', { id: id }).then(function (j) {
+          if (!j.success) {
+            app.innerHTML = '<div class="container"><div class="state-box"><span class="emoji">🔍</span><h3>' + UI.esc(j.message || 'Không tìm thấy') + '</h3><a class="btn btn-primary" href="bookings.html">Về đơn đặt</a></div></div>';
+            return;
+          }
+          render(j.data);
+        });
+      });
+
+      function render(b) {
+        var unit = b.unit || {};
+        var prop = unit.property || {};
+        var img = unit.cover_image && unit.cover_image.image_url
+          ? window.assetUrl(unit.cover_image.image_url)
+          : window.assetUrl('assets/images/homestays/fallback/unit-fallback.jpg');
+
+        var nightsRows = (b.nights || []).map(function (n) {
+          return '<div class="quote-row"><span>' + UI.fmtDate(n.stay_date) + '</span><span>' + UI.formatVND(n.nightly_rate) + '</span></div>';
+        }).join('');
+        var itemsRows = (b.price_items || []).map(function (it) {
+          var sign = it.amount < 0 ? '−' : '';
+          return '<div class="quote-row' + (it.amount < 0 ? ' discount' : '') + '"><span>' + UI.esc(it.label) + '</span><span>' + sign + UI.formatVND(Math.abs(it.amount)) + '</span></div>';
+        }).join('');
+
+        app.innerHTML = '<div class="container">' +
+          '<div class="layout" style="grid-template-columns:1fr 380px">' +
+          '<div class="layout-main">' +
+          '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">' +
+          '<h1 style="margin:0">' + UI.esc(unit.name || 'Homestay') + '</h1>' +
+          '<span class="status-pill status-' + b.status + '">' + UI.statusLabel(b.status) + '</span>' +
+          '<span class="' + (b.payment_status === 'paid' ? 'pay-paid' : 'pay-unpaid') + '">' + UI.payLabel(b.payment_status) + '</span>' +
+          '</div>' +
+          '<p style="color:var(--earth-light)">Mã đặt chỗ: <b>' + UI.esc(b.booking_reference || '') + '</b></p>' +
+          '<img src="' + UI.esc(img) + '" alt="Ảnh ' + UI.esc(unit.name || 'homestay') + '" style="width:100%;max-height:320px;object-fit:cover;border-radius:14px;margin:12px 0" onerror="this.src=window.assetUrl(\'assets/images/homestays/fallback/unit-fallback.jpg\')">' +
+          '<div class="spec-grid" style="grid-template-columns:repeat(3,1fr)">' +
+          '<div class="spec">' + UI.icon('calendar') + '<b>' + UI.fmtDate(b.check_in) + '</b><span>Nhận phòng</span></div>' +
+          '<div class="spec">' + UI.icon('calendar') + '<b>' + UI.fmtDate(b.check_out) + '</b><span>Trả phòng</span></div>' +
+          '<div class="spec"><span class="emoji">🌙</span><b>' + b.number_of_nights + ' đêm</b><span>' + b.total_guests + ' khách</span></div>' +
+          '</div>' +
+          (b.special_requests ? '<p style="color:var(--charcoal-soft)"><b>Yêu cầu đặc biệt:</b> ' + UI.esc(b.special_requests) + '</p>' : '') +
+          (b.cancellation_reason ? '<p style="color:var(--danger)"><b>Lý do hủy:</b> ' + UI.esc(b.cancellation_reason) + '</p>' : '') +
+          '</div>' +
+          '<aside><div class="booking-card">' +
+          '<h3 style="margin-bottom:14px">Chi tiết giá</h3>' +
+          (nightsRows || '<div class="quote-row"><span>Tiền phòng</span><span>' + UI.formatVND(b.subtotal) + '</span></div>') +
+          itemsRows +
+          '<div class="quote-row total"><span>Tổng</span><span>' + UI.formatVND(b.total_amount) + '</span></div>' +
+          '</div></aside>' +
+          '</div></div>';
+      }
+    })();
+  </script>
+</body>
+</html>

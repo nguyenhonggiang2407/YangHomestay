@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết Homestay - YangHomestay</title>
+  <meta name="description" id="meta-description" content="Xem khu lưu trú YangHomestay tại Hà Nội, các căn đang có, tiện ích và thông tin khu vực.">
+  <link rel="canonical" id="canonical-url" href="https://yanghomestay.helioho.st/customer/property-detail.html">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#1F2923">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+  <header class="site-header" id="site-header"></header>
+
+  <section class="section-tight" id="app">
+    <div class="container">
+      <div class="breadcrumb"><a href="./">Trang chủ</a> / <a href="homestays.html">Homestay</a> / <span id="bc-name">…</span></div>
+
+      <div class="detail-hero" id="hero-img"></div>
+      <div class="gallery-thumbs" id="thumbs"></div>
+
+      <div class="layout">
+        <div class="layout-main">
+          <div class="detail-title">
+            <h1 id="p-name">Đang tải…</h1>
+            <div class="detail-sub">
+              <span class="detail-location"><span id="p-loc"></span></span>
+              <span id="p-checkin-out"></span>
+            </div>
+          </div>
+
+          <p id="p-desc" style="color:var(--charcoal-soft)"></p>
+
+          <hr class="divider mt-4">
+
+          <h2 class="mt-4">Các căn homestay</h2>
+          <div class="grid grid-2" id="unit-list"></div>
+
+          <hr class="divider mt-4">
+
+          <h2 class="mt-4">Khám phá quanh đây</h2>
+          <div class="grid grid-2" id="nearby-list"></div>
+
+          <hr class="divider mt-4">
+
+          <h2 class="mt-4">Câu chuyện YangHomestay</h2>
+          <div class="story-block mt-4" id="p-story"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var UI = window.YangUI;
+      UI.injectHeader();
+      UI.injectFooter();
+
+      var id = Number(new URLSearchParams(location.search).get('id')) || 0;
+      if (id) document.getElementById('canonical-url').href = 'https://yanghomestay.helioho.st/customer/property-detail.html?id=' + id;
+      var CATEGORY_LABELS = {
+        food: 'Ăn uống', coffee: 'Cafe', attraction: 'Tham quan', nightlife: 'Buổi tối',
+        photography: 'Check-in', shopping: 'Mua sắm', transport: 'Di chuyển'
+      };
+      // Ảnh thật có sẵn trong project (thay cho ảnh minh họa cũ đã xóa)
+      var CATEGORY_IMG = {
+        food: 'experiences/hanoi-food',
+        coffee: 'experiences/egg-coffee',
+        attraction: 'hanoi-exterior/hanoi-apartment-exterior',
+        nightlife: 'experiences/west-lake-view',
+        photography: 'hanoi-exterior/hanoi-apartment-exterior',
+        shopping: 'hanoi-exterior/hanoi-apartment-exterior',
+        transport: 'hanoi-exterior/hanoi-apartment-exterior'
+      };
+
+      window.YangAPI.get('property-detail', { id: id }).then(function (j) {
+        if (!j.success) {
+          document.getElementById('app').innerHTML = '<div class="state-box"><span class="emoji">🏚️</span><h3>' + UI.esc(j.message || 'Không tìm thấy') + '</h3><a class="btn btn-primary" href="homestays.html">Xem danh sách</a></div>';
+          return;
+        }
+        render(j.data.property, j.data.units);
+      }).catch(function () {
+        document.getElementById('app').innerHTML = '<div class="state-box"><h3>Không kết nối được máy chủ</h3></div>';
+      });
+
+      function imgTag(url, alt) {
+        return '<img src="' + UI.esc(window.assetUrl(url)) + '" alt="' + UI.esc(alt) + '" loading="lazy" onerror="this.src=window.assetUrl(\'assets/images/homestays/fallback/property-fallback.jpg\')">';
+      }
+
+      function render(p, units) {
+        document.title = p.name + ' - YangHomestay';
+        var meta = document.getElementById('meta-description');
+        if (meta) meta.content = (p.short_description || p.description || ('Khám phá ' + p.name + ' tại Hà Nội.')).slice(0, 155);
+        document.getElementById('bc-name').textContent = p.name;
+        document.getElementById('p-name').textContent = p.name;
+        document.getElementById('p-loc').textContent = (p.district ? p.district + ', ' : '') + 'Hà Nội';
+        var ci = (p.checkin_time || '14:00:00').slice(0, 5);
+        var co = (p.checkout_time || '12:00:00').slice(0, 5);
+        document.getElementById('p-checkin-out').textContent = '🕐 Nhận phòng ' + ci + ' · Trả phòng ' + co;
+        document.getElementById('p-desc').textContent = p.description || p.short_description || '';
+
+        var gallery = p.gallery && p.gallery.length ? p.gallery : [];
+        var fallback = 'assets/images/homestays/fallback/property-fallback.jpg';
+        if (!gallery.length) gallery = [{ image_url: fallback, caption: p.name }];
+        document.getElementById('hero-img').innerHTML = imgTag(gallery[0].image_url, p.name);
+        document.getElementById('thumbs').innerHTML = gallery.slice(0, 6).map(function (g, i) {
+          return '<img src="' + UI.esc(window.assetUrl(g.image_url)) + '" data-img="' + UI.esc(window.assetUrl(g.image_url)) + '" class="thumb' + (i === 0 ? ' active' : '') + '" alt="' + UI.esc(g.caption || '') + '" loading="lazy" onerror="this.src=window.assetUrl(\'assets/images/homestays/fallback/property-fallback.jpg\')">';
+        }).join('');
+        document.querySelectorAll('#thumbs .thumb').forEach(function (t) {
+          t.addEventListener('click', function () {
+            document.getElementById('hero-img').innerHTML = imgTag(t.getAttribute('data-img'), p.name);
+            document.querySelectorAll('#thumbs .thumb').forEach(function (x) { x.classList.remove('active'); });
+            t.classList.add('active');
+          });
+        });
+
+        // units
+        var unitBox = document.getElementById('unit-list');
+        unitBox.innerHTML = units && units.length ? units.map(function (u) {
+          var img = u.cover_image && u.cover_image.image_url ? window.assetUrl(u.cover_image.image_url) : window.assetUrl('assets/images/homestays/fallback/unit-fallback.jpg');
+          var ratingTxt = u.review_count > 0 ? '★ ' + (Number(u.avg_rating) || 0).toFixed(1) + ' (' + u.review_count + ')' : 'Chưa có đánh giá';
+          return '<article class="card">' +
+            '<div class="card-media">' + (u.featured ? '<span class="badge badge-olive">Nổi bật</span>' : '') +
+            '<img src="' + UI.esc(img) + '" alt="' + UI.esc(u.name) + '" loading="lazy" onerror="this.src=window.assetUrl(\'assets/images/homestays/fallback/unit-fallback.jpg\')"></div>' +
+            '<div class="card-body">' +
+            '<h3 class="card-title">' + UI.esc(u.name) + '</h3>' +
+            '<div class="card-rating">' + ratingTxt + '</div>' +
+            '<div class="card-meta"><span>' + UI.icon('users') + u.max_guests + ' khách</span><span>' + UI.icon('bed') + (u.bedrooms || 1) + ' phòng ngủ</span><span>' + (u.beds || 1) + ' giường</span><span>' + (u.area_m2 ? u.area_m2 + 'm²' : '') + '</span></div>' +
+            '<div class="card-footer">' +
+            '<div class="card-price"><b>' + UI.formatVND(u.base_price) + '</b><span>/ đêm</span></div>' +
+            '<a class="btn btn-outline" href="unit-detail.html?id=' + u.id + '">Xem & đặt</a>' +
+            '</div></div></article>';
+        }).join('') : '<div class="state-box"><h3>Chưa có căn khả dụng</h3></div>';
+
+        // nearby
+        var nearby = p.nearby_places || [];
+        document.getElementById('nearby-list').innerHTML = nearby.length ? nearby.map(function (n) {
+          var d = n.distance_meters ? Math.round(Number(n.distance_meters) / 10) / 100 + ' km' : '';
+          var w = n.walking_minutes ? n.walking_minutes + ' phút đi bộ' : '';
+          var img = n.image_url ? window.assetUrl(n.image_url)
+            : window.assetUrl('assets/images/homestays/' + (CATEGORY_IMG[n.category] || 'hanoi-exterior/hanoi-apartment-exterior') + '.jpg');
+          return '<div class="nearby-card">' +
+            '<div class="nearby-media"><img src="' + img + '" alt="' + UI.esc(n.name) + '" loading="lazy" onerror="this.onerror=null;this.src=window.assetUrl(\'assets/images/homestays/fallback/unit-fallback.jpg\')">' +
+            '<span class="nearby-cat">' + UI.esc(CATEGORY_LABELS[n.category] || n.category) + '</span></div>' +
+            '<div class="nearby-body"><b>' + UI.esc(n.name) + '</b>' +
+            '<p style="font-size:13px;color:var(--earth-light);margin:4px 0 0">' + [d, w].filter(Boolean).join(' · ') + '</p>' +
+            (n.short_description ? '<p style="font-size:13.5px;margin:6px 0 0;color:var(--charcoal-soft)">' + UI.esc(n.short_description) + '</p>' : '') +
+            '</div></div>';
+        }).join('') : '<p style="color:var(--earth-light)">Đang cập nhật địa điểm quanh đây.</p>';
+
+        // story
+        document.getElementById('p-story').innerHTML = '<p>' + UI.esc(p.story || '') + '</p>';
+      }
+    })();
+  </script>
+</body>
+</html>
