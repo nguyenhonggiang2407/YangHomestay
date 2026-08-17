@@ -1,261 +1,287 @@
+<div align="center">
+
 # YangHomestay
 
-> Modern Hanoi Boutique Homestay booking platform — customer booking, YangMatch, Supabase-backed API and RBAC portals.
+### Ở đúng gu, sống đúng chất Hà Nội.
 
-## Production UI v4
-Bản này giữ kiến trúc backend/database hiện tại và nâng cấp customer experience: hero, navigation, search, homestay cards, district discovery, YangMatch wizard presentation, footer và responsive. Root `index.php` tương thích HelioHost và chuyển vào `customer/`.
+**A full-stack homestay booking platform for Hanoi with curated stays, personalized YangMatch recommendations, booking management and server-side RBAC.**
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-yanghomestay.helioho.st-1f2923?style=for-the-badge)](https://yanghomestay.helioho.st/)
+[![PHP](https://img.shields.io/badge/PHP-8%2B-777BB4?style=flat-square&logo=php&logoColor=white)](#tech-stack)
+[![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=111)](#tech-stack)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](#tech-stack)
+[![RBAC](https://img.shields.io/badge/Security-Server--side%20RBAC-355E3B?style=flat-square)](#security)
 
-**Ở đúng gu, sống đúng chất Hà Nội.**
+</div>
 
-YangHomestay là website đặt homestay tại Hà Nội với 4 portal tách biệt, dùng HTML/CSS/Vanilla JavaScript, PHP Session và Supabase PostgreSQL qua REST/RPC.
+![YangHomestay Hanoi boutique stay](assets/images/homestays/hero-hanoi-boutique.jpg)
+
+## Overview
+
+**YangHomestay** is a Hanoi-focused homestay booking project built as a production-oriented final-year/portfolio system rather than a UI-only demo.
+
+The platform combines a boutique local-travel experience with real booking business logic: users can discover stays by district and travel style, search by dates and guest count, inspect detailed unit data, receive personalized recommendations through **YangMatch**, create booking requests, manage reservations, and interact with role-specific internal portals.
+
+**Live production:** https://yanghomestay.helioho.st/
+
+## Problem
+
+Typical student booking projects often stop at static room cards and CRUD screens. That makes it difficult to demonstrate real product thinking, data consistency, booking rules, authorization and production readiness.
+
+YangHomestay was designed around a stricter question:
+
+> **What would a small Hanoi-focused Airbnb/Booking-style product need in order to feel believable to a real guest and defensible in a software engineering presentation?**
+
+## Solution
+
+YangHomestay focuses on four areas:
+
+- **Trustworthy accommodation data** — capacity, beds, gallery, amenities, district and pricing are kept consistent.
+- **End-to-end booking logic** — date validation, availability, overlap protection, pricing snapshots and booking state transitions.
+- **Personalized discovery** — YangMatch ranks suitable stays from user preferences instead of returning random recommendations.
+- **Server-side authorization** — Customer, Staff, Manager and Super Admin responsibilities are separated with PHP Session + backend RBAC.
+
+## Key Features
+
+### Customer experience
+
+- Search homestays by **district, check-in, check-out and guest count**.
+- Filter and sort available stays.
+- Detailed unit pages with gallery, capacity, beds, bedrooms, bathrooms, amenities, area, reviews and transparent pricing.
+- Favorite stays and customer account flow.
+- Booking request flow with validation and availability checks.
+- Booking history / reservation management where supported.
+- Hanoi experiences and local lifestyle content.
+- Responsive boutique-style interface designed around the brand line **“Ở đúng gu, sống đúng chất Hà Nội.”**
+
+### YangMatch recommendation engine
+
+YangMatch is the signature recommendation feature of the project. User inputs affect the actual result set and ranking.
 
 ```text
-Browser (Customer / Super Admin / Manager / Staff)
-        ↓ HTTPS + PHP Session + CSRF
-PHP Backend (RBAC + business services)
-        ↓ HTTPS :443
-Supabase PostgreSQL (REST API / RPC)
+User preferences
+      ↓
+Hard constraints
+(capacity / budget)
+      ↓
+Eligible homestays
+      ↓
+Weighted scoring
+(companion / style / amenities / location / purpose)
+      ↓
+Ranking
+      ↓
+Top matches
 ```
 
-## 1. Tech stack
+The scoring flow is deterministic and kept readable so the recommendation logic can be explained clearly during a project defense.
 
-- Frontend: HTML5, CSS3, Vanilla JavaScript.
-- Backend: PHP 8+, PHP Session, cURL/HTTPS.
-- Database: Supabase PostgreSQL.
-- Auth: `password_hash()` / `password_verify()` + PHP Session; không dùng Supabase Auth cho user của ứng dụng.
-- Production target: Apache/PHP shared hosting, đặc biệt HelioHost/Plesk.
-- Không yêu cầu Node runtime, React, Next.js, Docker, Redis hoặc Composer.
+### Internal portals
 
-## 2. Portal URLs
-
-| Portal | URL | Role được phép |
+| Portal | Role | Main responsibility |
 |---|---|---|
-| Customer | `/customer/` | customer |
-| Super Admin | `/admin/login.html` → `/admin/index.html` | `super_admin` |
-| Manager | `/manager/login.html` → `/manager/index.html` | `manager` (và `super_admin` nếu mở trực tiếp) |
-| Staff / Lễ tân | `/staff/login.html` → `/staff/index.html` | `staff`, `manager`, `super_admin` |
+| Customer | `customer` | Search, booking, favorites, reviews |
+| Staff / Receptionist | `staff` | Reservation operations, check-in/check-out |
+| Manager | `manager` | Property, unit, booking, pricing and reporting operations |
+| Super Admin | `super_admin` | System-wide administration, accounts, roles and audit access |
 
-`/admin/index.html`, `/manager/index.html`, `/staff/index.html` được Apache rewrite qua `backend/portal.php` để kiểm tra PHP Session + role **trước khi trả HTML dashboard**. Frontend guard vẫn tồn tại như lớp phòng thủ bổ sung, nhưng không phải nguồn phân quyền chính.
+Sensitive authorization is enforced by the backend. Hiding a menu item in JavaScript is **not** treated as a security boundary.
 
-## 3. Demo accounts
+## Tech Stack
 
-| Portal | Username | Password | Role |
-|---|---|---|---|
-| Super Admin | `admin` | `admin123` | `super_admin` |
-| Manager | `manager` | `manager123` | `manager` |
-| Staff | `staff` | `staff123` | `staff` |
+| Layer | Technology |
+|---|---|
+| Frontend | HTML5, CSS3, Vanilla JavaScript |
+| Backend | PHP 8+, PHP Session, cURL/HTTPS |
+| Database | Supabase PostgreSQL |
+| Data access | Supabase REST API + PostgreSQL RPC |
+| Authentication | `password_hash()` / `password_verify()` + PHP Session |
+| Authorization | Server-side role-based access control (RBAC) |
+| Hosting target | Apache/PHP shared hosting, HelioHost/Plesk |
 
-Customer demo dùng các account trong seed, mật khẩu demo `customer123`.
+The project intentionally avoids unnecessary runtime complexity: **no Node server, React, Next.js, Docker, Redis or Composer is required to run the application.**
 
-> **Quan trọng:** `admin123`, `manager123`, `staff123` và `customer123` chỉ dành cho development/demo. Đổi toàn bộ demo password trước khi public production.
-
-## 4. Permission matrix
-
-Backend policy nằm tại `backend/lib/InternalAccess.php`.
-
-| Feature | Super Admin | Manager | Staff |
-|---|:---:|:---:|:---:|
-| Dashboard | YES | YES | YES |
-| Bookings / booking detail | YES | YES | YES |
-| Reservation calendar | YES | YES | YES |
-| Check-in / Check-out | YES | YES | YES |
-| Customers | YES | YES | LIMITED VIEW |
-| Properties | CRUD | CRUD | VIEW |
-| Units | CRUD | CRUD | VIEW |
-| Pricing / Rate rules | YES | YES | NO |
-| Promotions | YES | YES | NO |
-| Reviews | MODERATE | MODERATE | VIEW |
-| Revenue | YES | YES | NO |
-| Internal accounts | YES | NO | NO |
-| Roles | YES | NO | NO |
-| Audit logs | YES | VIEW | NO |
-| System settings | YES | NO | NO |
-
-Các request nhạy cảm không dựa vào hidden menu, localStorage hoặc JavaScript role. `backend/api.php` gọi RBAC server-side cho từng action; request sai quyền trả `403`.
-
-## 5. Cấu trúc chính
+## Architecture
 
 ```text
-WEBODER/
-├── .htaccess                         # Portal rewrite + chặn private config/log
-├── customer/                         # Customer portal hiện hữu
-├── admin/                            # Super Admin portal
-│   ├── login.html
-│   ├── index.html
-│   ├── css/admin.css
-│   └── js/
-├── manager/                          # Manager portal
-│   ├── login.html
-│   └── index.html
-├── staff/                            # Lễ tân portal
-│   ├── login.html
-│   ├── index.html
-│   └── js/staff.js
-├── assets/css/internal-portals.css   # Shared Manager/Staff UI
-├── backend/
-│   ├── api.php                       # Internal API router + RBAC
-│   ├── customer-api.php              # Customer API router
-│   ├── portal.php                    # Server-side portal guard
-│   ├── bootstrap.php
-│   ├── config.supabase.example.php
-│   ├── config.supabase.local.php     # Private, GITIGNORED
-│   ├── lib/
-│   │   ├── InternalAccess.php        # Role/permission policy
-│   │   └── SupabaseClient.php
-│   ├── services/
-│   │   ├── AdminAuthService.php
-│   │   ├── InternalAdminService.php
-│   │   └── ...
-│   └── tests/
-│       ├── test-pricing.php
-│       ├── test-availability.php
-│       └── test-rbac.php
-└── database/supabase/
-    ├── 001_schema.sql ... 008_real_homestay_images.sql
-    └── 009_security_hardening.sql
+┌──────────────────────────────────────────┐
+│ Browser                                  │
+│ Customer / Staff / Manager / Super Admin │
+└───────────────────┬──────────────────────┘
+                    │ HTTPS
+                    ▼
+┌──────────────────────────────────────────┐
+│ HTML + CSS + Vanilla JavaScript           │
+└───────────────────┬──────────────────────┘
+                    │ Fetch / Forms
+                    ▼
+┌──────────────────────────────────────────┐
+│ PHP Backend                               │
+│ Session · CSRF · RBAC · Business Services │
+└───────────────────┬──────────────────────┘
+                    │ HTTPS :443
+                    ▼
+┌──────────────────────────────────────────┐
+│ Supabase PostgreSQL                       │
+│ Tables · Views · Indexes · RPC            │
+└──────────────────────────────────────────┘
 ```
 
-## 6. Authentication flow
+### Portal entry points
 
-### Internal accounts
+| Portal | URL |
+|---|---|
+| Customer | `/customer/` |
+| Super Admin | `/admin/login.html` |
+| Manager | `/manager/login.html` |
+| Staff / Receptionist | `/staff/login.html` |
 
-1. Login page gửi username/password + portal đang đăng nhập tới `backend/api.php?action=login`.
-2. Backend xác thực bcrypt từ bảng `admins`.
-3. Backend kiểm tra role có được phép đăng nhập portal đó không.
-4. Sau login hợp lệ, session ID được regenerate và session lưu `admin_id`, `admin_role`, `admin_name`.
-5. Dashboard và mọi internal API action tiếp tục xác minh session/role server-side.
-6. Logout xóa session internal đúng cách.
+Internal dashboard HTML is protected through Apache rewrite + `backend/portal.php`, so a user cannot gain access simply by typing a dashboard URL directly.
 
-Cross-role examples:
-
-- `staff` đăng nhập tại `/admin/login.html` → `403`, không tạo Super Admin session.
-- `manager` tự mở `/admin/index.html` → bị portal guard chuyển về Manager portal.
-- anonymous tự mở `/staff/index.html` → chuyển về `/staff/login.html`.
-- staff gọi API pricing/admin-account trực tiếp → `403`.
-
-Customer và internal account là hai luồng riêng: customer dùng bảng `customers`; internal portals dùng bảng `admins`.
-
-## 7. API client / lỗi login cũ
-
-Internal portals dùng chung `admin/js/admin-api.js`.
-
-Load order bắt buộc tại login:
+## Booking Flow
 
 ```text
-admin-config.js → admin-api.js → admin-login.js
+Homepage
+   ↓
+Search
+   ↓
+Listing + Filters
+   ↓
+Unit Detail
+   ↓
+Dates + Guests
+   ↓
+Availability Check
+   ↓
+Pricing Snapshot
+   ↓
+Authenticated Booking Request
+   ↓
+Booking Status / Management
 ```
 
-API client có `get()`, `post()`, `patch()`, `delete()`, CSRF handling và timeout. Login dùng `try/catch/finally` tương đương qua Promise chain để luôn khôi phục trạng thái button khi request lỗi; không còn phụ thuộc vào `window.ADMIN_CONFIG.API` trước khi config được khởi tạo.
+Core booking rules include:
 
-## 8. Supabase config
-
-Giữ kiến trúc:
-
-```text
-Browser → PHP backend → HTTPS → Supabase
-```
-
-Secret chỉ được dùng server-side.
-
-1. Copy `backend/config.supabase.example.php` thành `backend/config.supabase.local.php` nếu chưa có.
-2. Điền URL và secret/service-role credential trong file local.
-3. `backend/config.supabase.local.php` đã nằm trong `.gitignore` và `.htaccess` chặn truy cập trực tiếp.
-4. Không đưa secret vào HTML/JS, log hoặc repository public.
-
-Bản ZIP bàn giao **không chứa** `backend/config.supabase.local.php` hay secret production. Tạo file local hoặc biến môi trường trực tiếp trên server sau khi upload; không commit file đó lên GitHub.
-
-## 9. Database migrations
-
-Fresh database chạy theo thứ tự:
-
-```text
-001_schema.sql
-002_seed.sql                 # development only; có TRUNCATE
-003_indexes.sql
-004_rls.sql
-005_functions.sql
-006_booking_rpc.sql
-007_search_support.sql
-008_real_homestay_images.sql
-009_security_hardening.sql
-010_content_image_refresh.sql
-011_gallery_capacity_logic_fix.sql
-012_production_polish.sql       # production data polish / canonical gallery + unit-code repair
-013_final_consistency_hardening.sql # final data/claim/image consistency repair
-```
-
-`009_security_hardening.sql` không sửa logic booking/pricing và không xóa dữ liệu. Nó:
-
-- revoke quyền gọi trực tiếp các `SECURITY DEFINER` RPC từ `anon`/`authenticated`;
-- chỉ grant RPC đó cho `service_role`;
-- đặt `v_unit_rating` thành `security_invoker`;
-- cố định `search_path` của `set_updated_at()`.
-
-Với database hiện có: **không chạy lại `002_seed.sql` trên production**. Nếu chưa áp dụng các migration mới, chạy các migration còn thiếu theo thứ tự `009_security_hardening.sql` → `010_content_image_refresh.sql` → `011_gallery_capacity_logic_fix.sql` → `012_production_polish.sql` → `013_final_consistency_hardening.sql`. Migration 013 là bước chốt của bản FINAL: loại mapping ảnh còn trùng, chuẩn hóa claim hình ảnh và sửa snapshot booking demo vượt capacity mà không reset user/booking/payment.
-
-## 10. Booking engine
-
-Các phần cốt lõi vẫn giữ nguyên:
-
-- availability convention: check-in inclusive / check-out exclusive;
-- overlap protection;
-- `create_booking_atomic`;
+- check-in inclusive / check-out exclusive date convention;
+- guest capacity validation;
+- server-side availability checks;
+- overlapping-date protection;
+- atomic booking creation through `create_booking_atomic`;
 - advisory-lock based conflict protection;
-- booking nights + pricing snapshot;
-- promotion calculation;
-- booking state machine;
-- check-in/check-out rules.
+- price/night, nights, discounts and total snapshots;
+- controlled booking status transitions.
 
-Portal/RBAC changes không chuyển logic booking sang frontend và không trust giá từ client.
+The backend does not trust a total price supplied by the browser.
 
-## 11. Local setup — XAMPP
+## Data Model & Consistency
 
-1. Đặt toàn bộ folder `WEBODER` vào Apache document root, ví dụ `C:\xampp\htdocs\ks\WEBODER`.
-2. Bật Apache `mod_rewrite` và cho phép `.htaccess` (`AllowOverride All`) để server-side portal guard hoạt động.
-3. Bảo đảm PHP có extension cURL.
-4. Cấu hình `backend/config.supabase.local.php`.
-5. Mở:
+The project uses a normalized PostgreSQL schema covering the main booking domain:
+
+- customers and internal accounts;
+- roles and authorization;
+- properties and units;
+- unit images and amenities;
+- bookings and booking status;
+- promotions / pricing rules;
+- reviews;
+- audit and system data where applicable.
+
+The current curated dataset contains **16 accommodation units** with normalized capacity/bed logic and local gallery mappings. Database migrations are stored under [`database/supabase/`](database/supabase/).
+
+## Security
+
+Security controls implemented in the project include:
+
+- server-side RBAC through `backend/lib/InternalAccess.php`;
+- server-side portal guard through `backend/portal.php` + `.htaccess`;
+- PHP Session validation and session regeneration after login;
+- CSRF protection for sensitive state-changing requests;
+- bcrypt-compatible password hashing via PHP password APIs;
+- backend input validation;
+- Supabase service credentials kept **server-side only**;
+- private config excluded through `.gitignore`;
+- direct access to private config/log/diagnostic resources blocked by Apache rules;
+- restricted PostgreSQL RPC permissions for privileged operations;
+- user-facing API errors that avoid exposing raw database internals.
+
+> `backend/config.supabase.local.php` is intentionally **not committed**. Copy `backend/config.supabase.example.php` and provide the private server credential locally or through environment configuration.
+
+## Project Structure
 
 ```text
-http://localhost/ks/WEBODER/customer/
-http://localhost/ks/WEBODER/admin/login.html
-http://localhost/ks/WEBODER/manager/login.html
-http://localhost/ks/WEBODER/staff/login.html
+YangHomestay/
+├── admin/                         # Super Admin portal
+├── assets/                        # Shared styles, scripts, images, favicon
+├── backend/
+│   ├── api.php                    # Internal API router
+│   ├── customer-api.php           # Customer API router
+│   ├── portal.php                 # Server-side portal guard
+│   ├── lib/                       # Access + infrastructure helpers
+│   ├── services/                  # Business services
+│   └── tests/                     # Pricing / availability / RBAC tests
+├── customer/                      # Public/customer booking experience
+├── database/
+│   └── supabase/                  # Schema, seed and migrations
+├── manager/                       # Manager portal
+├── staff/                         # Staff / receptionist portal
+├── tools/                         # Development/data maintenance utilities
+├── .gitignore
+├── .htaccess
+├── README.md
+├── CHANGELOG-FINAL.md
+├── QA-REPORT.md
+├── DEPLOYMENT.md
+└── IMAGE_SOURCES.md
 ```
 
-API/base path được tính tương đối, không phụ thuộc `/ks/WEBODER/` trong application runtime.
+## Local Setup
 
-## 12. HelioHost deployment
+### Requirements
 
-Upload **toàn bộ nội dung folder `WEBODER/`** vào document root của domain/subdomain (thường là folder website trong Plesk), sao cho `.htaccess`, `customer/`, `admin/`, `manager/`, `staff/`, `backend/`, `assets/` nằm cùng cấp.
+- Apache + PHP 8+
+- PHP cURL extension
+- Apache `mod_rewrite`
+- Supabase project / PostgreSQL database
 
-Checklist:
+### XAMPP example
 
-1. PHP 8+ và cURL enabled.
-2. Apache rewrite / `.htaccess` được áp dụng.
-3. HTTPS bật.
-4. `backend/config.supabase.local.php` có credential server-side đúng.
-5. Chạy các migration còn thiếu theo thứ tự `009_security_hardening.sql` → `010_content_image_refresh.sql` → `011_gallery_capacity_logic_fix.sql` → `012_production_polish.sql` → `013_final_consistency_hardening.sql`.
-6. Test `customer/unit-detail.html?id=14`: tối đa 2 khách, gallery có phòng khách/bếp, phòng ngủ, workspace, bếp, WC và góc sinh hoạt.
-7. Test cả 4 login URLs, refresh session, logout và cross-role direct URL/API.
-8. Đổi demo passwords trước production.
+1. Clone the repository into Apache document root, for example:
 
-Không cần Node runtime, Docker runtime, Redis hay background process.
+```text
+C:\xampp\htdocs\YangHomestay
+```
 
-## 13. Security notes
+2. Copy the private config template:
 
-- Server-side RBAC: `InternalAccess.php` + role từ PHP Session được đồng bộ lại với database.
-- Server-side portal guard: `backend/portal.php` + `.htaccess`.
-- State-changing internal requests dùng CSRF.
-- Session regenerate sau login; cookie security được cấu hình trong bootstrap/session layer.
-- Admin password chỉ lưu bcrypt.
-- Supabase secret không xuất hiện ở frontend.
-- API client có timeout và friendly errors; raw Supabase/database internals không được trả trực tiếp cho production UI.
-- Internal account management chỉ `super_admin`.
-- Manager/Staff không thể tự nâng quyền bằng request trực tiếp.
+```text
+backend/config.supabase.example.php
+→ backend/config.supabase.local.php
+```
 
-## 14. Tests
+3. Fill in the server-side Supabase URL and private credential.
+4. Make sure Apache allows `.htaccess` (`AllowOverride All`).
+5. Open:
+
+```text
+http://localhost/YangHomestay/customer/
+http://localhost/YangHomestay/admin/login.html
+http://localhost/YangHomestay/manager/login.html
+http://localhost/YangHomestay/staff/login.html
+```
+
+## Database Migrations
+
+For a fresh Supabase database, migrations live in [`database/supabase/`](database/supabase/) and should be applied in numerical order.
+
+Important production rule:
+
+> **Do not re-run the destructive development seed on an existing production database.** Apply only the missing migrations in order.
+
+See [`DEPLOYMENT.md`](DEPLOYMENT.md) for the current production sequence and HelioHost instructions.
+
+## Testing
+
+Backend regression scripts:
 
 ```bash
 php backend/tests/test-pricing.php
@@ -263,7 +289,7 @@ php backend/tests/test-availability.php
 php backend/tests/test-rbac.php
 ```
 
-Syntax audit:
+Useful syntax checks:
 
 ```bash
 find . -name '*.php' -print0 | xargs -0 -n1 php -l
@@ -273,19 +299,62 @@ node --check admin/js/admin.js
 node --check staff/js/staff.js
 ```
 
-`backend/tests/live-test.php` cần PHP cURL để gọi Supabase thật.
+For the latest audited test scope, limitations and regression results, see **[`QA-REPORT.md`](QA-REPORT.md)**.
 
-## 15. Production checklist
+## Documentation
 
-- [ ] Đổi `admin123`, `manager123`, `staff123` và các customer demo password.
-- [ ] Chạy `009_security_hardening.sql` nếu database hiện tại chưa được harden.
-- [ ] Xác nhận PHP cURL.
-- [ ] Xác nhận Apache rewrite + `.htaccess`.
-- [ ] Test Super Admin, Manager, Staff, Customer.
-- [ ] Test direct URL và direct API bằng role thấp hơn.
-- [ ] Không public `config.supabase.local.php`.
-- [ ] Không commit logs/credentials.
+| Document | Purpose |
+|---|---|
+| [`CHANGELOG-FINAL.md`](CHANGELOG-FINAL.md) | Important fixes and production hardening |
+| [`QA-REPORT.md`](QA-REPORT.md) | Test coverage, results and known limitations |
+| [`DEPLOYMENT.md`](DEPLOYMENT.md) | HelioHost / server deployment guide |
+| [`IMAGE_SOURCES.md`](IMAGE_SOURCES.md) | Curated image source traceability |
+| [`database/supabase/ERD.md`](database/supabase/ERD.md) | Database relationship documentation |
+
+## Image & Content Policy
+
+Accommodation and experience images used for the portfolio/demo dataset are stored locally in the repository rather than hotlinked at runtime. Source traceability is documented in [`IMAGE_SOURCES.md`](IMAGE_SOURCES.md).
+
+The project does **not** claim that the curated demo properties are real commercial inventory.
+
+## Known Limitations
+
+- No commercial payment gateway is integrated yet.
+- The accommodation dataset is curated for portfolio/demo use rather than connected to a live property-management system.
+- Production behavior depends on correct server-side Supabase configuration.
+- Some infrastructure-level visual regression and end-to-end checks still require a real browser/server environment.
+
+These limitations are documented intentionally instead of being hidden behind fake production claims.
+
+## Roadmap
+
+- [ ] Integrate a real payment sandbox/provider.
+- [ ] Add automated browser E2E tests for the complete booking journey.
+- [ ] Add CI for PHP/JavaScript syntax and regression checks.
+- [ ] Add repository screenshots for homepage, listing, unit detail, YangMatch and internal dashboards.
+- [ ] Expand observability and production monitoring.
+
+## Portfolio Notes
+
+YangHomestay demonstrates more than CRUD/UI implementation. The project is designed to show:
+
+- product-oriented UX thinking;
+- frontend implementation without a heavy framework;
+- PHP backend architecture;
+- PostgreSQL/Supabase data modeling;
+- booking-domain business rules;
+- personalized recommendation logic;
+- authentication and authorization;
+- security hardening;
+- deployment and QA documentation.
 
 ---
 
-© 2026 YangHomestay · Ở đúng gu, sống đúng chất Hà Nội.
+<div align="center">
+
+**YangHomestay · Hà Nội Boutique Stays**  
+*Ở đúng gu, sống đúng chất Hà Nội.*
+
+[Live Demo](https://yanghomestay.helioho.st/) · [QA Report](QA-REPORT.md) · [Deployment](DEPLOYMENT.md) · [Changelog](CHANGELOG-FINAL.md)
+
+</div>
