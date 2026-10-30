@@ -1,4 +1,4 @@
-# IMAGE_SOURCES.md
+# Nguồn ảnh YangHomestay
 
 Danh sách nguồn ảnh đang được quản lý cho YangHomestay sau đợt LogicFix/GalleryFix ngày 2026-08-17.
 
@@ -81,7 +81,7 @@ Danh sách nguồn ảnh đang được quản lý cho YangHomestay sau đợt L
 - `dong-da-cozy-studio/bedroom.jpg` — Pexels 19857234: bedroom ấm, có giường rõ ràng, đồng bộ hơn với living room Đống Đa.
 - `cau-giay-modern-studio/bedroom.jpg` — Pexels 6447390: studio có giường và khu bếp, hợp logic Cầu Giấy.
 
-## Final production de-duplication (17/08/2026)
+## Điều chỉnh ảnh trùng (17/08/2026)
 
 Các ảnh dưới đây được bổ sung ở vòng audit cuối để mỗi unit có identity riêng, loại bỏ reuse/crop trùng giữa các căn. Ảnh đã được tải về project và dùng local; link chỉ để truy vết nguồn.
 
@@ -106,7 +106,7 @@ Các ảnh dưới đây được bổ sung ở vòng audit cuối để mỗi u
 | `assets/images/homestays/truc-bach-lake-view-studio/lake-view.jpg` | Trúc Bạch Lake — swan boats and urban lake view | Pexels | 30640846 | [Mở nguồn](https://www.pexels.com/photo/serene-view-of-truc-b-ch-lake-with-swan-boats-30640846/) | Local optimized copy; true Trúc Bạch context; replaces near-duplicate window crop in Unit 4 gallery |
 
 
-## Final active-gallery note — 17/08/2026
+## Thư viện ảnh đang dùng — 17/08/2026
 
 - Canonical active `unit_images` cuối: **61 rows / 16 units**.
 - Unit 13 không còn dùng `cau-giay-modern-studio/workspace.jpg` hoặc `kitchen-bedroom.jpg` trong active gallery vì các candidate đó trùng asset active của unit khác. Các file/source cũ vẫn được giữ trong catalog này để truy vết lịch sử.

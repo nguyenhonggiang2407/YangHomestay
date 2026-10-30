@@ -16,7 +16,7 @@ declare(strict_types=1);
  *   - database/supabase/002_seed.sql                         (fresh Supabase dev reset)
  *   - database/supabase/011_gallery_capacity_logic_fix.sql   (Supabase existing DB)
  *   - database/011_gallery_capacity_logic_fix_mysql.sql      (MySQL existing DB)
- *   - assets/images/SOURCES.csv + IMAGE_SOURCES.md
+ *   - assets/images/SOURCES.csv + docs/image-sources.md
  */
 
 fwrite(STDOUT, "update-demo-images.php is deprecated and will not modify data.\n");

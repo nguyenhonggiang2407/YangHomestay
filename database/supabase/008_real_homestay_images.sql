@@ -1,7 +1,7 @@
 -- ═════════════════════════════════════════════════════════════════════
 -- 008_REAL_HOMESTAY_IMAGES — Bộ ảnh local đã curate + chống duplicate
 -- Chạy sau 001-007. Có thể chạy lại an toàn.
--- Ảnh nguồn ngoài được lưu local; xem /IMAGE_SOURCES.md.
+-- Ảnh nguồn ngoài được lưu local; xem /docs/image-sources.md.
 -- ═════════════════════════════════════════════════════════════════════
 
 BEGIN;

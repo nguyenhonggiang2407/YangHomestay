@@ -11,7 +11,7 @@ final class Security
     /**
      * Gửi security headers cơ bản.
      * KHÔNG bật CSP mặc định để tránh làm hỏng frontend hiện tại
-     * (xem ghi chú Phase 3 §70 — CSP chỉ bật sau khi test kỹ).
+     * Kiểm tra chính sách CSP trên các màn hình trước khi bật.
      */
     public static function sendHeaders(): void
     {

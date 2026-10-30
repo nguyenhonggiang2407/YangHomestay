@@ -1,6 +1,6 @@
 # 🔁 Migration Notes — MySQL → PostgreSQL / Supabase
 
-Tài liệu chuyển đổi thiết kế database Phase 2 (MySQL) sang PostgreSQL/Supabase.
+Tài liệu chuyển đổi thiết kế database MySQL sang PostgreSQL/Supabase.
 
 > ⚠️ Phase này **chỉ tạo file SQL mới** — chưa migrate dữ liệu, chưa đổi backend.
 > File MySQL gốc giữ nguyên: `database/yang_homestay_schema.sql` + `yang_homestay_seed.sql`.
@@ -10,7 +10,7 @@ Tài liệu chuyển đổi thiết kế database Phase 2 (MySQL) sang PostgreSQ
 
 ## 1. Bảng 24 — giữ nguyên domain model
 
-Toàn bộ 24 bảng của Phase 2 MySQL được chuyển nguyên vẹn (tên, cột, quan hệ, dữ liệu seed):
+Toàn bộ 24 bảng của lược đồ MySQL được chuyển nguyên vẹn (tên, cột, quan hệ, dữ liệu seed):
 PROPERTY → UNIT → AVAILABILITY → BOOKING. Không thêm/bớt bảng.
 
 ---
@@ -44,13 +44,13 @@ PROPERTY → UNIT → AVAILABILITY → BOOKING. Không thêm/bớt bảng.
    (giống MySQL `DAYOFWEEK()`). PostgreSQL `EXTRACT(DOW FROM d)` trả 0–6 (0=CN),
    nên backend dùng `EXTRACT(DOW FROM d) + 1` để khớp quy ước lưu trữ.
 3. **Time zone:** `TIMESTAMPTZ` lưu theo UTC nội bộ; demo seed dùng offset `+07`
-   (Asia/Ho_Chi_Minh). Application Phase 3 quyết định timezone hiển thị.
+   (Asia/Ho_Chi_Minh). Ứng dụng quyết định timezone hiển thị.
 4. **Truncate + CASCADE:** seed dùng `TRUNCATE ... RESTART IDENTITY CASCADE` — chỉ
    đụng bảng trong schema YangHomestay.
 5. **CHECK constraints:** PostgreSQL **bắt buộc thực thi** CHECK (khác MySQL 5.7 bỏ qua).
    Seed đã đảm bảo dữ liệu hợp lệ: `check_out > check_in`, rating 1–5, tiền ≥ 0…
 6. **RLS:** đây là điểm mới so với MySQL — bật RLS toàn bộ (xem `004_rls.sql`).
-   Backend Phase 3 dùng service_role key để bypass.
+   Backend dùng service_role key để bypass.
 
 ---
 
@@ -66,7 +66,7 @@ PROPERTY → UNIT → AVAILABILITY → BOOKING. Không thêm/bớt bảng.
 
 ## 5. Dữ liệu từ `hotel_management` → Supabase
 
-Việc migrate dữ liệu thật từ `hotel_management` sang Supabase là việc của **Phase 3+**
+Việc migrate dữ liệu thật từ `hotel_management` sang Supabase là công việc cần một kế hoạch chuyển đổi riêng
 (theo `database/migration-notes.md` — bản đồ hotel_management → yang_homestay vẫn áp dụng
 nguyên vẹn cho PostgreSQL). Các bước khuyến nghị:
 

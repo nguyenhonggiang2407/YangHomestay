@@ -16,7 +16,7 @@
 --   • check_in inclusive / check_out exclusive (20/08 → 23/08 = 3 đêm)
 --   • subtotal = SUM(booking_nights.nightly_rate)
 --   • total    = subtotal + cleaning_fee − discount_amount
---   • Ảnh demo dùng asset local đã curate (Pexels + crop local); nguồn ghi tại /IMAGE_SOURCES.md, không hotlink runtime.
+--   • Ảnh demo dùng asset local đã curate (Pexels + crop local); nguồn ghi tại /docs/image-sources.md, không hotlink runtime.
 --   • Khoảng cách / walking_minutes của nearby_places là ước lượng DEMO.
 -- ═════════════════════════════════════════════════════════════════════════
 

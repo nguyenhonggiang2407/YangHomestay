@@ -1,10 +1,7 @@
-# YangHomestay real-photo mapping
+# Bảng gán ảnh cho căn
 
-Sau khi chạy `TAI_ANH_YANGHOMESTAY.bat`, copy toàn bộ các thư mục ảnh vào:
-
-`WEBODER/assets/images/homestays/`
-
-Sau đó yêu cầu Freebuff map theo bảng dưới đây.
+Đường dẫn trong bảng tính từ assets/images/homestays.
+Giữ nguồn ảnh trong SOURCES.csv và chỉ gán ảnh tiện nghi phù hợp với dữ liệu của căn.
 
 | Unit / nhóm | Cover đề xuất | Ảnh phụ |
 |---|---|---|
@@ -24,21 +21,3 @@ Sau đó yêu cầu Freebuff map theo bảng dưới đây.
 | Unit có bathtub thật | Không dùng làm cover mặc định | `premium-bathroom/bathtub.jpg` hoặc `light-bathroom.jpg` |
 | Property exterior / Hanoi section | `hanoi-exterior/hanoi-apartment-exterior.jpg` | — |
 | Fallback | `fallback/unit-fallback.jpg` | — |
-
-## Prompt ngắn cho Freebuff
-
-```text
-Real photos are now available under:
-assets/images/homestays/
-
-Read MAPPING_FOR_FREEBUFF.md and replace the current illustrated placeholders with the provided real local JPG photos.
-
-Requirements:
-- Use the mapped cover image for each matching unit.
-- Populate property_images/unit_images safely when appropriate.
-- Do not fake amenities: bathtub/lake-view/balcony images only for units whose database data supports them.
-- Use object-fit: cover, consistent 4:3 card ratio, loading="lazy" for non-critical images, and fallback/unit-fallback.jpg for errors.
-- Apply photos to homepage cards, listing cards, favorites, property/unit detail galleries and booking summaries where appropriate.
-- Keep Supabase/booking/auth logic unchanged.
-- Do not use remote hotlinks after integration; use local asset paths.
-```

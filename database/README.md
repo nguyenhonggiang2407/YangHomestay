@@ -1,4 +1,4 @@
-# 🏡 YangHomestay — Database (Phase 2)
+# Database MySQL tham khảo
 
 Database mới hoàn toàn riêng biệt cho nền tảng **YangHomestay**.
 
@@ -28,7 +28,7 @@ YangHomestay Trúc Bạch (property)
 | `README.md` | File này — hướng dẫn + quy ước. |
 | `migration-notes.md` | Map dữ liệu cũ (`hotel_management`) → kiến trúc mới. |
 | `ERD.md` | Sơ đồ quan hệ thực thể (Mermaid). |
-| `yang_homestay.sql` | *(Cũ)* bản nháp Phase 1, đã thay thế bởi `yang_homestay_schema.sql` + `yang_homestay_seed.sql`. Không xóa, không dùng tiếp. |
+| `yang_homestay.sql` | *(Cũ)* bản nháp ban đầu, đã thay thế bởi `yang_homestay_schema.sql` + `yang_homestay_seed.sql`. Không xóa, không dùng tiếp. |
 
 ---
 
@@ -130,7 +130,7 @@ Không có bảng availability riêng; availability được **tổng hợp** t�
 
 > Unit **khả dụng** cho 1 đêm ⟺ không có booking active chứa đêm đó **VÀ** không có availability_block chứa đêm đó.
 
-### Overlap logic (backend Phase 3 dùng transaction trước INSERT)
+### Overlap logic
 
 ```sql
 SELECT COUNT(*)
@@ -169,7 +169,7 @@ Ví dụ block `20/08 → 23/08` chặn các đêm 20, 21, 22; bán lại từ 2
 | `paid` | Đã thanh toán đủ |
 | `refunded` | Đã hoàn tiền |
 
-`booking_reference` do **backend generate** (Phase 3), ví dụ `YH202608160001` — database chỉ cần `UNIQUE`.
+`booking_reference` do **backend generate** , ví dụ `YH202608160001` — database chỉ cần `UNIQUE`.
 
 ---
 
@@ -229,7 +229,7 @@ Total                2.650.000 ₫
 - `valid_from` / `valid_until`: hạn dùng.
 - `usage_limit` (toàn mã) và `usage_limit_per_customer`.
 - Khi áp dụng: ghi `bookings.promotion_id` + `promotion_code_snapshot`, ghi 1 dòng `promotion_usages` (unique theo `booking_id`), và `booking_price_items` dòng `discount` âm.
-- Mã hết hạn / hết lượt / vượt giá trị tối thiểu → từ chối (validate ở backend Phase 3).
+- Mã hết hạn / hết lượt / vượt giá trị tối thiểu → từ chối (validate ở backend).
 - Seed chỉ có 2 mã **DEMO**: `YANGNEW10` (10%) và `HANOI150` (150.000₫).
 
 ---
@@ -260,7 +260,7 @@ Categories: `guest_type | style | activity | location | work`.
 
 - Seed **chỉ** dùng địa chỉ demo ở mức district/neighborhood, ghi rõ "(địa chỉ demo)".
 - Email demo dùng domain `example.com` (chuẩn RFC 2606) — không gửi được mail thật.
-- Ảnh demo dùng **asset local đã curate** trong `assets/images/` (nguồn Pexels/crop local được ghi ở `IMAGE_SOURCES.md`) — website không hotlink ảnh runtime.
+- Ảnh demo dùng **asset local đã curate** trong `assets/images/` (nguồn Pexels/crop local được ghi ở `docs/image-sources.md`) — website không hotlink ảnh runtime.
 - Khoảng cách / `walking_minutes` của `nearby_places` là **ước lượng DEMO** — thay dữ liệu thật trước production.
 - Nội dung mô tả property/unit bằng tiếng Việt ngắn gọn, hợp lý — không lorem ipsum.
 - **Không bao giờ** seed dữ liệu giả hàng loạt (review giả, booking giả…) vào production.

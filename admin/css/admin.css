@@ -208,7 +208,7 @@ tr:hover td { background: #F7F3EC; }
   .form-grid { grid-template-columns: 1fr; }
 }
 
-/* FINAL PRODUCT POLISH — internal portals */
+/* Internal portal layout */
 :root{--bg:#F5F4F1;--surface:#FFFFFF;--line:#E6E2DC;--text:#242622;--muted:#70716B;--olive:#4B5D4C;--olive-dark:#1F2923;--earth-dark:#4B5D4C;--terracotta:#A65D3D;--sidebar-w:252px;--header-h:68px;--radius:14px}
 .sidebar{background:#18221C}
 .sidebar .brand{padding:20px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
