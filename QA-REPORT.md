@@ -98,7 +98,7 @@ Lưu ý: project vẫn giữ một số asset lịch sử không còn active đ�
 - login/register CSRF vẫn tồn tại.
 - main distributable không chứa private Supabase credential.
 - frontend source không chứa Supabase service-role/secret.
-- source scan không phát hiện obvious JWT/service-role/OpenAI-style secret literal.
+- source scan không phát hiện obvious JWT/service-role/API-key secret literal.
 
 **Known security limitation / kiến trúc:**
 - Backend dùng server-side Supabase credential để gọi Data API. File này phải tồn tại trên HelioHost nhưng không được commit GitHub/public ZIP.
