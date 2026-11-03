@@ -3,9 +3,14 @@
 Website tìm và đặt homestay tại Hà Nội, xây dựng bằng PHP, JavaScript thuần
 và Supabase PostgreSQL.
 
-[Demo](https://yanghomestay.helioho.st/)
+[Mở bản demo](https://yanghomestay.helioho.st/) ·
+[Kiến trúc và đặt phòng](docs/architecture.md) ·
+[Cài đặt](#cài-đặt) · [Kết quả kiểm tra](docs/verification.md)
 
-![Trang giới thiệu YangHomestay](assets/images/homestays/hero-hanoi-boutique.jpg)
+![Trang chủ ứng dụng đang chạy trên desktop](docs/screenshots/home-desktop.jpg)
+
+Ảnh chụp từ ứng dụng đang chạy; ảnh căn trong ứng dụng là stock cho dữ liệu demo,
+không phải bằng chứng có phòng thật đang cho thuê. [Nguồn và phạm vi screenshot](docs/screenshots/README.md).
 
 ## Chức năng
 
@@ -18,6 +23,10 @@ và Supabase PostgreSQL.
 YangMatch lọc theo điều kiện bắt buộc trước, sau đó tính điểm theo sở thích.
 Backend tính giá đặt phòng và kiểm tra lịch trống; không dùng tổng tiền gửi từ trình duyệt.
 Ngày nhận phòng được tính vào kỳ ở, ngày trả phòng không tính.
+
+Điểm kỹ thuật chính là giữ việc xác nhận lịch và tính giá ở server: PHP lấy người
+đặt từ Session, PostgreSQL khóa theo căn rồi kiểm tra lại overlap trong RPC trước
+khi ghi booking và giá từng đêm. [Luồng chi tiết và giới hạn kiểm chứng](docs/architecture.md).
 
 ## Công nghệ
 
@@ -37,6 +46,16 @@ Ngày nhận phòng được tính vào kỳ ở, ngày trả phòng không tín
 4. Sao chép `backend/config.supabase.example.php` thành `backend/config.supabase.local.php`,
    điền URL và khóa backend của Supabase.
 5. Mở `http://localhost/YangHomestay/customer/`.
+
+PowerShell trên XAMPP có thể dùng:
+
+```powershell
+Copy-Item backend/config.supabase.example.php backend/config.supabase.local.php
+& C:\xampp\php\php.exe backend/tests/test-pricing.php
+```
+
+Chạy Apache để kiểm tra cả `.htaccess` và guard các portal; PHP built-in server
+không thực thi các rewrite/quy tắc truy cập Apache này.
 
 Khóa Supabase chỉ nằm ở backend; tệp cấu hình riêng đã được Git bỏ qua.
 Các bước triển khai trên host và cập nhật database nằm trong [hướng dẫn triển khai](docs/deployment.md).
@@ -78,6 +97,7 @@ và các luồng cần thử trên trình duyệt.
 ## Tài liệu
 
 - [Cấu trúc database](database/supabase/ERD.md)
+- [Kiến trúc, tính giá và kiểm soát quyền](docs/architecture.md)
 - [Triển khai](docs/deployment.md)
 - [Nguồn ảnh](docs/image-sources.md)
 - [Bảng gán ảnh](assets/images/image-map.md)
@@ -85,3 +105,22 @@ và các luồng cần thử trên trình duyệt.
 
 Dữ liệu căn và ảnh stock dùng cho demo, không đại diện cho phòng đang được kinh doanh.
 Dự án chưa tích hợp cổng thanh toán.
+
+<details>
+<summary>Tìm kiếm, chi tiết căn và giao diện điện thoại</summary>
+
+![Danh sách tìm kiếm theo số khách](docs/screenshots/search-desktop.jpg)
+
+![Chi tiết căn và biểu mẫu đặt phòng](docs/screenshots/unit-detail-desktop.jpg)
+
+<img src="docs/screenshots/home-mobile.jpg" width="390" alt="Trang chủ trên màn hình 390 px" />
+
+</details>
+
+## Nguồn và giấy phép
+
+Giữ tài liệu [nguồn ảnh](docs/image-sources.md) và lịch sử mã nguồn hiện có.
+Repository chưa khai báo giấy phép tổng thể cho mã ứng dụng; không suy ra quyền
+tái sử dụng source từ việc repository công khai. Giấy phép ảnh và thư viện có
+phạm vi riêng. Đợt cập nhật portfolio này không đổi quyền tác giả hoặc cấp phép
+lại mã nguồn/ảnh đã có.

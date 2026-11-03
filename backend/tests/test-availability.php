@@ -5,7 +5,7 @@ declare(strict_types=1);
  * ═════════════════════════════════════════════════════════════════════════
  * TEST — AVAILABILITY (validateDates + overlap convention)
  *
- * Chạy:  php tests/test-availability.php
+ * Chạy từ repo root: php backend/tests/test-availability.php
  * Không public production. Không chứa secret.
  * ═════════════════════════════════════════════════════════════════════════
  */
@@ -23,11 +23,17 @@ function check(string $name, bool $cond): void
 }
 
 echo "== 1. validateDates — format & thứ tự ==\n";
-check('ngày hợp lệ → null', AvailabilityService::validateDates('2026-08-20', '2026-08-23') === null);
-check('sai format → lỗi', AvailabilityService::validateDates('20/08/2026', '2026-08-23') !== null);
-check('check_out <= check_in → lỗi', AvailabilityService::validateDates('2026-08-23', '2026-08-23') !== null);
-check('check_out trước check_in → lỗi', AvailabilityService::validateDates('2026-08-23', '2026-08-20') !== null);
-check('check_in quá khứ → lỗi', AvailabilityService::validateDates('2020-01-01', '2020-01-03') !== null);
+// Relative dates keep validation fixtures valid after the original demo dates pass.
+$today = new DateTimeImmutable('today', new DateTimeZone('Asia/Ho_Chi_Minh'));
+$checkIn = $today->modify('+30 days')->format('Y-m-d');
+$checkOut = $today->modify('+33 days')->format('Y-m-d');
+$past = $today->modify('-2 days')->format('Y-m-d');
+$pastOut = $today->modify('-1 day')->format('Y-m-d');
+check('ngày hợp lệ → null', AvailabilityService::validateDates($checkIn, $checkOut) === null);
+check('sai format → lỗi', AvailabilityService::validateDates('not-a-date', $checkOut) !== null);
+check('check_out <= check_in → lỗi', AvailabilityService::validateDates($checkIn, $checkIn) !== null);
+check('check_out trước check_in → lỗi', AvailabilityService::validateDates($checkOut, $checkIn) !== null);
+check('check_in quá khứ → lỗi', AvailabilityService::validateDates($past, $pastOut) !== null);
 
 echo "\n== 2. Overlap convention (check_in inclusive / check_out exclusive) ==\n";
 // Giả lập: booking hiện tại 20/08 → 23/08 (3 đêm: 20, 21, 22). Bán lại được từ 23/08.

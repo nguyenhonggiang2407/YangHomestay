@@ -15,16 +15,22 @@ Database cho YangHomestay. Kiến trúc dữ liệu chính: **PROPERTY → UNIT 
 | `007_search_support.sql` | Rating view + availability search RPC | 7 |
 | `008_real_homestay_images.sql` | Real-image mappings/data | 8 |
 | `009_security_hardening.sql` | Khóa direct RPC grants + DB hardening | 9 |
+| `010_content_image_refresh.sql` | Đồng bộ ảnh/nội dung demo | 10 |
+| `011_gallery_capacity_logic_fix.sql` | Gallery và sức chứa | 11 |
+| `012_production_polish.sql` | Gallery canonical và mã căn | 12 |
+| `013_final_consistency_hardening.sql` | Sửa ánh xạ ảnh, claim view và booking demo | 13 |
 
 `ERD.md` và `migration-notes.md` là tài liệu tham khảo.
 
 ## 2. Import
 
-Fresh development database: chạy `001` → `009` theo đúng thứ tự trong Supabase SQL Editor.
+Fresh development database: chạy `001` → `013` theo đúng thứ tự trong Supabase SQL Editor.
 
 > `002_seed.sql` có reset/TRUNCATE dữ liệu development. **Không chạy lại seed trên production có dữ liệu thật.**
 
-Database đã tồn tại đến `008`: chỉ chạy `009_security_hardening.sql`.
+Database đã tồn tại: đối chiếu migration đã áp dụng rồi chỉ chạy các migration
+còn thiếu theo thứ tự. Không chạy lại seed. Các thay đổi 010–013 được giải thích
+ở mục 10 bên dưới.
 
 Kiểm tra cơ bản:
 
