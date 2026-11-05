@@ -37,6 +37,20 @@ khi ghi booking và giá từng đêm. [Luồng chi tiết và giới hạn ki�
 | Database | Supabase PostgreSQL, REST và RPC |
 | Máy chủ | Apache, mod_rewrite |
 
+## Đọc mã và bằng chứng kỹ thuật
+
+| Chủ đề | Điểm bắt đầu review |
+| --- | --- |
+| Quyền API | [Customer API và CSRF](backend/customer-api.php), [permission nội bộ](backend/lib/InternalAccess.php) |
+| Đặt chỗ và giá | [BookingService](backend/services/BookingService.php), [RPC khóa theo căn và ghi snapshot giá](database/supabase/006_booking_rpc.sql) |
+| Quyền gọi RPC | [Migration siết grant](database/supabase/009_security_hardening.sql) |
+| Kiểm chứng | [Kết quả local và phạm vi chưa kiểm tra](docs/verification.md), [kịch bản test](docs/testing.md) |
+
+Repository hiện chưa có workflow CI. Kết quả local được ghi theo ngày trong tài liệu
+kiểm chứng; không thay cho kiểm thử RPC đồng thời trên Supabase hoặc xác nhận toàn
+bộ luồng đặt chỗ trên hosting. Liên kết demo không xác nhận hosting đã đồng bộ
+commit mới nhất.
+
 ## Cài đặt
 
 1. Đặt mã nguồn trong document root của Apache, ví dụ `C:\xampp\htdocs\YangHomestay`.
