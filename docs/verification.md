@@ -22,6 +22,7 @@ Supabase thử riêng được cấu hình. Các script này tạo dữ liệu v
 database đang phục vụ demo để kiểm tra một cách tùy tiện. Chưa kiểm chứng thanh
 toán, luồng nội bộ đã đăng nhập hoặc đặt chỗ từ đầu đến cuối.
 
-Repository chưa có pipeline CI; các kết quả trên là chạy local và kiểm tra demo
-HTTP/trình duyệt. PHP thuần không có bước bundle/build. Ảnh chụp là bản demo hiện
-hữu; việc push GitHub không xác nhận hosting PHP đã đồng bộ commit mới.
+Các kết quả trên ghi lại lần kiểm tra local và demo ngày 03/11/2026.
+Xem [GitHub Actions](https://github.com/nguyenhonggiang2407/YangHomestay/actions/workflows/ci.yml)
+để đối chiếu kết quả lint và các test cục bộ theo commit. Kiểm tra RPC với Supabase
+và kiểm tra luồng đã đăng nhập có môi trường và kết quả riêng.

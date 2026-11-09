@@ -1,0 +1,32 @@
+name: Local application checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check PHP syntax
+        run: git ls-files -z -- '*.php' | xargs -0 -r -n 1 php -l
+      - name: Test pricing, availability, and roles
+        run: |
+          php backend/tests/test-pricing.php
+          php backend/tests/test-availability.php
+          php backend/tests/test-rbac.php
+      - name: Check browser script syntax
+        run: |
+          node --check customer/js/api.js
+          node --check customer/js/ui.js
+          node --check admin/js/admin.js
+          node --check staff/js/staff.js
