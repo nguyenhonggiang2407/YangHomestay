@@ -46,10 +46,10 @@ khi ghi booking và giá từng đêm. [Luồng chi tiết và giới hạn ki�
 | Quyền gọi RPC | [Migration siết grant](database/supabase/009_security_hardening.sql) |
 | Kiểm chứng | [Kết quả local và phạm vi chưa kiểm tra](docs/verification.md), [kịch bản test](docs/testing.md) |
 
-Repository hiện chưa có workflow CI. Kết quả local được ghi theo ngày trong tài liệu
-kiểm chứng; không thay cho kiểm thử RPC đồng thời trên Supabase hoặc xác nhận toàn
-bộ luồng đặt chỗ trên hosting. Liên kết demo không xác nhận hosting đã đồng bộ
-commit mới nhất.
+[GitHub Actions](https://github.com/nguyenhonggiang2407/YangHomestay/actions/workflows/ci.yml)
+kiểm tra cú pháp và chạy ba bộ test giá, khoảng ngày và phân quyền bằng dữ liệu cục bộ.
+Kiểm thử RPC đồng thời cần Supabase thử riêng. Kết quả và phạm vi kiểm chứng hosting
+được ghi trong [tài liệu kiểm chứng](docs/verification.md).
 
 ## Cài đặt
 
