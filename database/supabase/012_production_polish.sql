@@ -36,7 +36,7 @@ INSERT INTO public.property_images (property_id, storage_path, image_url, captio
 (1, NULL, 'assets/images/homestays/hanoi-vintage-loft/cover.jpg', 'Nội thất chọn lọc tại Phố Cổ', 'common_area', 2, FALSE, '2026-05-15 10:00:00+07'),
 (2, NULL, 'assets/images/homestays/truc-bach-lake-view-studio/window-view.jpg', 'Góc nhìn thoáng tại Trúc Bạch', 'view', 0, TRUE, '2026-05-15 10:00:00+07'),
 (2, NULL, 'assets/images/homestays/truc-bach-lake-view-studio/cover.jpg', 'Không gian lưu trú bên hồ Trúc Bạch', 'common_area', 1, FALSE, '2026-05-15 10:00:00+07'),
-(2, NULL, 'assets/images/homestays/truc-bach-balcony-room/cover.jpg', 'Ban công xanh tại Trúc Bạch', 'balcony', 2, FALSE, '2026-05-15 10:00:00+07'),
+(2, NULL, 'assets/images/homestays/truc-bach-balcony-room/cover.jpg', 'Ban công xanh tại Trúc Bạch', 'common_area', 2, FALSE, '2026-05-15 10:00:00+07'),
 (3, NULL, 'assets/images/homestays/west-lake-sunset-studio/lake-view.jpg', 'Góc nhìn Hồ Tây', 'view', 0, TRUE, '2026-05-15 10:00:00+07'),
 (3, NULL, 'assets/images/homestays/west-lake-sunset-studio/cover.jpg', 'Không gian lưu trú tại Hồ Tây', 'common_area', 1, FALSE, '2026-05-15 10:00:00+07'),
 (3, NULL, 'assets/images/homestays/west-lake-workcation-loft/cover.jpg', 'Không gian workcation tại Hồ Tây', 'common_area', 2, FALSE, '2026-05-15 10:00:00+07'),
