@@ -120,7 +120,27 @@ class BookingService {
         "check_in", stay.checkIn().toString(),
         "check_out", stay.checkOut().toString(),
         "available", available,
-        "reasons", available ? List.of() : List.of("Có booking hoặc lịch chặn trong khoảng ngày này."));
+        "reasons", available ? List.of() : List.of("Có booking hoặc lịch chặn trong khoảng ngày này."),
+        "suggestions", available ? List.of() : suggestedStays(unitId, stay));
+  }
+
+  private List<Map<String, String>> suggestedStays(long unitId, StayDates stay) {
+    return jdbc.query(
+        """
+        SELECT dates.check_in, dates.check_out
+        FROM (
+          SELECT CAST(? AS date) + days AS check_in, CAST(? AS date) + days AS check_out
+          FROM generate_series(1, 30) AS candidate(days)
+        ) dates
+        WHERE dates.check_out <= DATE '9999-12-31'
+          AND public.is_unit_available(?, dates.check_in, dates.check_out)
+        ORDER BY dates.check_in
+        LIMIT 3
+        """,
+        (row, index) -> Map.of(
+            "check_in", row.getObject("check_in", LocalDate.class).toString(),
+            "check_out", row.getObject("check_out", LocalDate.class).toString()),
+        stay.checkIn(), stay.checkOut(), unitId);
   }
 
   public Object quote(Map<String, String> query) {

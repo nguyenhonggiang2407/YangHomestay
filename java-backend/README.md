@@ -20,9 +20,17 @@ Compose chạy PostgreSQL ở cổng `55432` trên loopback. Lần đầu nó kh
 
 - Spring Security dùng session, BCrypt và CSRF cho đăng ký, đăng nhập, đăng xuất và thao tác ghi. API tra tài khoản hiện tại ở server để giới hạn quyền xem và hủy đơn.
 - Java tính báo giá theo từng đêm dựa trên giá gốc, lịch giá và ưu đãi. Báo giá chỉ có giá trị tham khảo đến lúc đặt.
+- Khi căn hết chỗ, API tìm tối đa ba khoảng cùng số đêm, với ngày nhận phòng trong 30 ngày sau ngày đã chọn. Chọn gợi ý sẽ tính lại giá và kiểm tra phòng trống.
 - Khi ghi đơn, PostgreSQL dùng `create_booking_atomic` để khóa theo căn, kiểm tra lịch, tính lại giá và lưu đơn cùng giá từng đêm trong một transaction. Ngày trả phòng không tính vào kỳ ở, nên hai lượt có thể liền kề.
-- Trang quản trị, yêu thích, YangMatch, gửi đánh giá và các chức năng ngoài luồng khách tiếp tục thuộc bản PHP. Bản Java phục vụ giao diện và API của luồng thử riêng trên máy.
+- Khách có thể lưu hoặc bỏ căn trong **Yêu thích**. Backend gắn danh sách với tài khoản đăng nhập. Hai yêu cầu lưu cùng căn chỉ tạo một bản ghi.
+- Trang quản trị, YangMatch và gửi đánh giá tiếp tục thuộc bản PHP. Bản Java phục vụ giao diện và API của luồng thử riêng trên máy.
 
 ## Kiểm thử
 
-`mvn verify` khởi tạo PostgreSQL tạm thời riêng để kiểm tra API, kể cả lúc Compose chưa chạy. Kiểm thử dùng đúng schema, RPC và dữ liệu giả của repo. CI chạy cả bộ kiểm tra PHP hiện có và bài kiểm thử Java.
+`mvn verify` khởi tạo PostgreSQL tạm thời riêng để kiểm tra API, kể cả lúc Compose chưa chạy. Các ca kiểm tra mới bao phủ lịch gợi ý qua ngày trả phòng, giới hạn 30 ngày, thao tác lưu lặp và quyền sở hữu danh sách yêu thích. CI chạy cả bộ kiểm tra PHP hiện có và bài kiểm thử Java.
+
+## Hướng phát triển
+
+1. **Lịch vận hành cho lễ tân.** Quản lý ngày đóng bán để dọn phòng hoặc bảo trì, xác nhận và cập nhật trạng thái đơn theo quyền. Ghi nhật ký người thực hiện và kiểm tra khi hai nhân viên cùng sửa một đơn.
+2. **YangMatch trên Java.** Lọc căn theo ngày, sức chứa và ngân sách, sau đó xếp hạng theo tiện nghi và mục đích chuyến đi. Hiển thị lý do cho từng kết quả.
+3. **Thông báo theo trạng thái đơn.** Gửi xác nhận hoặc thông báo hủy sau khi transaction thành công. Kiểm tra gửi lại mà khách chỉ nhận một thông báo.

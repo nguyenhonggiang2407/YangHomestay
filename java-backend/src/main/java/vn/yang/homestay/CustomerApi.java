@@ -30,14 +30,17 @@ import org.springframework.web.bind.annotation.RestController;
 class CustomerApi {
   private final CatalogService catalog;
   private final BookingService bookings;
+  private final FavoritesService favorites;
   private final CustomerAccounts accounts;
   private final AuthenticationManager authenticationManager;
   private final HttpSessionSecurityContextRepository contexts;
 
-  CustomerApi(CatalogService catalog, BookingService bookings, CustomerAccounts accounts,
-      AuthenticationManager authenticationManager, HttpSessionSecurityContextRepository contexts) {
+  CustomerApi(CatalogService catalog, BookingService bookings, FavoritesService favorites,
+      CustomerAccounts accounts, AuthenticationManager authenticationManager,
+      HttpSessionSecurityContextRepository contexts) {
     this.catalog = catalog;
     this.bookings = bookings;
+    this.favorites = favorites;
     this.accounts = accounts;
     this.authenticationManager = authenticationManager;
     this.contexts = contexts;
@@ -58,7 +61,9 @@ class CustomerApi {
       case "booking-quote" -> success(bookings.quote(query));
       case "my-bookings" -> success(bookings.list(customerId(authentication), query.get("status")));
       case "booking-detail" -> success(bookings.detail(customerId(authentication), id(query, "id")));
-      case "login", "register", "logout", "create-booking", "cancel-booking" ->
+      case "favorites" -> success(favorites.list(customerId(authentication)));
+      case "login", "register", "logout", "create-booking", "cancel-booking", "add-favorite",
+          "remove-favorite" ->
           throw new ApiProblem(405, "Thao tác này cần dùng POST.");
       default -> throw unsupported();
     };
@@ -80,6 +85,16 @@ class CustomerApi {
       case "create-booking" -> ResponseEntity.status(201).body(new Result(
           true, "Đã tạo yêu cầu đặt chỗ.", bookings.create(customerId(authentication), input)));
       case "cancel-booking" -> success(bookings.cancel(customerId(authentication), input));
+      case "add-favorite" -> {
+        boolean added = favorites.add(customerId(authentication), id(input, "unit_id"));
+        yield ResponseEntity.status(added ? 201 : 200).body(new Result(true,
+            added ? "Đã thêm vào yêu thích." : "Đã có trong danh sách yêu thích.", null));
+      }
+      case "remove-favorite" -> {
+        favorites.remove(customerId(authentication), id(input, "unit_id"));
+        yield new Result(true, "Đã xóa khỏi yêu thích.", null);
+      }
+      case "favorites" -> throw new ApiProblem(405, "Thao tác này cần dùng GET.");
       default -> throw unsupported();
     };
   }
@@ -129,9 +144,9 @@ class CustomerApi {
     return ((Number) requireCustomer(authentication).get("id")).longValue();
   }
 
-  private static long id(Map<String, String> query, String field) {
+  private static long id(Map<String, ?> values, String field) {
     try {
-      long value = Long.parseLong(query.getOrDefault(field, ""));
+      long value = Long.parseLong(String.valueOf(values.get(field)));
       if (value > 0) return value;
     } catch (NumberFormatException error) {
       // Both missing and invalid identifiers return the same response.

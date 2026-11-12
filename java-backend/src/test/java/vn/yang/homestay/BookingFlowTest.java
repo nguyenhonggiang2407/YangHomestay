@@ -201,6 +201,80 @@ class BookingFlowTest {
         .isEqualTo(1L);
   }
 
+  @Test
+  void suggestsThreeNearestStaysWithoutChangingTheNumberOfNights() throws Exception {
+    CustomerSession guest = new CustomerSession();
+    CustomerSession owner = customer("suggestion-owner");
+    long unitId = 3;
+    LocalDate arrival = futureDate(500);
+    var stay = stayQuery(unitId, arrival, arrival.plusDays(2));
+    var open = guest.get("availability", stay).data(200);
+    assertThat(open.path("available").asBoolean()).isTrue();
+    assertThat(open.path("suggestions").size()).isZero();
+
+    jdbc.update("insert into availability_blocks (unit_id, start_date, end_date) values (?, ?, ?)",
+        unitId, arrival, arrival.plusDays(2));
+    owner.post("create-booking", booking(unitId, arrival.plusDays(4), arrival.plusDays(6))).data(201);
+
+    var unavailable = guest.get("availability", stay).data(200);
+    assertThat(unavailable.path("available").asBoolean()).isFalse();
+    assertThat(unavailable.path("suggestions").size()).isEqualTo(3);
+    int index = 0;
+    for (int offset : List.of(2, 6, 7)) {
+      var option = unavailable.path("suggestions").path(index++);
+      assertThat(option.path("check_in").asString()).isEqualTo(arrival.plusDays(offset).toString());
+      assertThat(option.path("check_out").asString()).isEqualTo(arrival.plusDays(offset + 2).toString());
+    }
+  }
+
+  @Test
+  void onlySuggestsStartsInTheNextThirtyDays() throws Exception {
+    CustomerSession guest = new CustomerSession();
+    long unitId = 3;
+    LocalDate arrival = futureDate(600);
+    var stay = stayQuery(unitId, arrival, arrival.plusDays(2));
+    long block = jdbc.queryForObject(
+        "insert into availability_blocks (unit_id, start_date, end_date) values (?, ?, ?) returning id",
+        Long.class, unitId, arrival, arrival.plusDays(30));
+
+    var suggestions = guest.get("availability", stay).data(200).path("suggestions");
+    assertThat(suggestions.size()).isEqualTo(1);
+    assertThat(suggestions.path(0).path("check_in").asString()).isEqualTo(arrival.plusDays(30).toString());
+    assertThat(suggestions.path(0).path("check_out").asString()).isEqualTo(arrival.plusDays(32).toString());
+
+    jdbc.update("update availability_blocks set end_date = ? where id = ?", arrival.plusDays(31), block);
+    assertThat(guest.get("availability", stay).data(200).path("suggestions").size()).isZero();
+  }
+
+  @Test
+  void savingAndRemovingFavoritesIsPrivateAndIdempotent() throws Exception {
+    CustomerSession guest = new CustomerSession();
+    assertThat(guest.get("favorites", Map.of()).statusCode()).isEqualTo(401);
+    CustomerSession owner = customer("favorite-owner");
+    CustomerSession stranger = customer("favorite-stranger");
+    Map<String, Object> unit = Map.of("unit_id", 1);
+    assertThat(owner.post("add-favorite", unit, false).statusCode()).isEqualTo(419);
+
+    HttpRequest first = owner.postRequest("add-favorite", unit, true);
+    HttpRequest second = owner.postRequest("add-favorite", unit, true);
+    var a = owner.client.sendAsync(first, HttpResponse.BodyHandlers.ofString());
+    var b = owner.client.sendAsync(second, HttpResponse.BodyHandlers.ofString());
+    assertThat(List.of(a.get(20, TimeUnit.SECONDS).statusCode(), b.get(20, TimeUnit.SECONDS).statusCode()))
+        .containsExactlyInAnyOrder(201, 200);
+    var favorites = owner.get("favorites", Map.of()).data(200);
+    assertThat(favorites.size()).isEqualTo(1);
+    assertThat(favorites.path(0).path("unit").path("id").asInt()).isEqualTo(1);
+    assertThat(favorites.path(0).path("unit").path("cover_image").path("image_url").asString()).isNotBlank();
+
+    assertThat(stranger.get("favorites", Map.of()).data(200).size()).isZero();
+    stranger.post("remove-favorite", unit).data(200);
+    assertThat(owner.get("favorites", Map.of()).data(200).size()).isEqualTo(1);
+    owner.post("remove-favorite", unit).data(200);
+    owner.post("remove-favorite", unit).data(200);
+    assertThat(owner.get("favorites", Map.of()).data(200).size()).isZero();
+    assertThat(owner.post("add-favorite", Map.of("unit_id", 999999)).statusCode()).isEqualTo(404);
+  }
+
   private CustomerSession customer(String suffix) throws Exception {
     CustomerSession session = new CustomerSession();
     String email = suffix + "@example.test";

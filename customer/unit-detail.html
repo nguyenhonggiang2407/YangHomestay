@@ -93,7 +93,11 @@
             </div>
 
             <div id="bk-quote"></div>
-            <div class="avail-line hidden" id="bk-avail"></div>
+            <div class="avail-line hidden" id="bk-avail" role="status"></div>
+            <section class="booking-alternatives" id="bk-alternatives" aria-labelledby="bk-alternatives-title" hidden>
+              <h2 id="bk-alternatives-title">Ngày trống gần nhất</h2>
+              <div id="bk-suggestion-list" class="booking-alternatives-list"></div>
+            </section>
 
             <button type="button" class="btn btn-primary btn-block btn-lg mt-4" id="bk-submit" disabled>Chọn ngày để kiểm tra</button>
             <p class="booking-trust-note">Giá được tính trước khi gửi yêu cầu. Bước này không thực hiện thanh toán trực tuyến.</p>
@@ -251,6 +255,32 @@
         btn.textContent = label || (bookingReady ? 'Gửi yêu cầu đặt' : 'Chọn ngày để kiểm tra');
       }
 
+      function renderSuggestedStays(suggestions) {
+        if (!Array.isArray(suggestions)) return;
+        var section = document.getElementById('bk-alternatives');
+        var list = document.getElementById('bk-suggestion-list');
+        if (!suggestions.length) {
+          list.textContent = 'Chưa có lịch cùng số đêm trong 30 ngày tiếp theo.';
+        }
+        suggestions.forEach(function (stay) {
+          var button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'btn btn-outline';
+          button.textContent = UI.fmtDate(stay.check_in) + ' → ' + UI.fmtDate(stay.check_out);
+          button.addEventListener('click', function () {
+            var arrival = document.getElementById('bk-checkin');
+            var departure = document.getElementById('bk-checkout');
+            arrival.value = stay.check_in;
+            departure.min = UI.addDaysISO(stay.check_in, 1);
+            departure.value = stay.check_out;
+            arrival.focus();
+            refreshQuote();
+          });
+          list.appendChild(button);
+        });
+        section.hidden = false;
+      }
+
       function refreshQuote() {
         var ci = document.getElementById('bk-checkin').value;
         var co = document.getElementById('bk-checkout').value;
@@ -262,6 +292,8 @@
         quote = null;
         setBookingReady(false, 'Đang kiểm tra…');
         avail.className = 'avail-line hidden';
+        document.getElementById('bk-alternatives').hidden = true;
+        document.getElementById('bk-suggestion-list').replaceChildren();
 
         var dateError = UI.validateDateRange(ci, co);
         if (!ci && !co) {
@@ -287,27 +319,26 @@
           var j = responses[0], aj = responses[1];
           if (!j.success) {
             box.innerHTML = '<div class="quote-err">' + UI.esc(j.message || 'Không thể tính giá') + '</div>';
-            setBookingReady(false, 'Không thể đặt lúc này');
-            return;
+          } else {
+            quote = j.data;
+            var rows = '<div class="quote-row"><span>' + quote.number_of_nights + ' đêm</span><span>' + UI.formatVND(quote.subtotal) + '</span></div>' +
+              '<div class="quote-row"><span>Phí vệ sinh</span><span>' + UI.formatVND(quote.cleaning_fee) + '</span></div>';
+            if (quote.discount_amount > 0) {
+              rows += '<div class="quote-row discount"><span>Ưu đãi' + (quote.promotion_code ? ' (' + UI.esc(quote.promotion_code) + ')' : '') + '</span><span>−' + UI.formatVND(quote.discount_amount) + '</span></div>';
+            }
+            rows += '<div class="quote-row total"><span>Tổng dự kiến</span><span>' + UI.formatVND(quote.total_amount) + '</span></div>';
+            box.innerHTML = rows;
           }
-          quote = j.data;
-          var rows = '<div class="quote-row"><span>' + quote.number_of_nights + ' đêm</span><span>' + UI.formatVND(quote.subtotal) + '</span></div>' +
-            '<div class="quote-row"><span>Phí vệ sinh</span><span>' + UI.formatVND(quote.cleaning_fee) + '</span></div>';
-          if (quote.discount_amount > 0) {
-            rows += '<div class="quote-row discount"><span>Ưu đãi' + (quote.promotion_code ? ' (' + UI.esc(quote.promotion_code) + ')' : '') + '</span><span>−' + UI.formatVND(quote.discount_amount) + '</span></div>';
-          }
-          rows += '<div class="quote-row total"><span>Tổng dự kiến</span><span>' + UI.formatVND(quote.total_amount) + '</span></div>';
-          box.innerHTML = rows;
 
-          avail.classList.remove('hidden');
           if (aj.success && aj.data && aj.data.available) {
             avail.className = 'avail-line ok';
             avail.textContent = '✓ Còn trống trong khoảng ngày này';
-            setBookingReady(true, 'Gửi yêu cầu đặt');
-          } else if (aj.success) {
+            setBookingReady(!!quote, quote ? 'Gửi yêu cầu đặt' : 'Kiểm tra lại báo giá');
+          } else if (aj.success && aj.data) {
             avail.className = 'avail-line no';
             avail.textContent = '✕ Căn này đã kín trong khoảng ngày đã chọn';
             setBookingReady(false, 'Chọn ngày khác');
+            renderSuggestedStays(aj.data.suggestions);
           } else {
             avail.className = 'avail-line no';
             avail.textContent = 'Chưa thể xác nhận phòng trống. Vui lòng thử lại.';
