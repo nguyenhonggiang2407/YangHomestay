@@ -26,12 +26,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = "yanghomestay.reception.enabled=true")
 class BookingFlowTest {
   private static final ObjectMapper JSON = new ObjectMapper();
   private static final Duration HTTP_TIMEOUT = Duration.ofSeconds(15);
@@ -273,6 +276,239 @@ class BookingFlowTest {
     owner.post("remove-favorite", unit).data(200);
     assertThat(owner.get("favorites", Map.of()).data(200).size()).isZero();
     assertThat(owner.post("add-favorite", Map.of("unit_id", 999999)).statusCode()).isEqualTo(404);
+  }
+
+  @Test
+  void receptionRequiresItsOwnLoginAndProtectsWritesWithItsOwnCsrfToken() throws Exception {
+    CustomerSession customer = customer("reception-isolation");
+    ReceptionSession reception = new ReceptionSession(customer);
+    StaffAccount staff = staffAccount("isolation-staff", "staff");
+    String week = "/calendar?from=" + futureDate(75);
+
+    var guest = reception.get("/session");
+    assertThat(guest.statusCode()).isEqualTo(200);
+    assertThat(guest.body().path("enabled").asBoolean()).isTrue();
+    assertThat(guest.body().path("authenticated").asBoolean()).isFalse();
+    assertThat(reception.get(week).statusCode()).isEqualTo(401);
+
+    Map<String, Object> credentials = staff.credentials();
+    assertThat(reception.post("/login", credentials, null).statusCode()).isEqualTo(419);
+    String customerToken = customer.get("get-csrf", Map.of()).data(200).path("token").asString();
+    assertThat(reception.post("/login", credentials, customerToken).statusCode()).isEqualTo(419);
+
+    reception.login(staff);
+    assertThat(reception.get(week).statusCode()).isEqualTo(200);
+    assertThat(customer.get("check-auth", Map.of()).body().path("authenticated").asBoolean()).isTrue();
+    assertThat(reception.get("/session").body().path("can_manage_blocks").asBoolean()).isFalse();
+
+    var logout = reception.post("/logout", Map.of());
+    assertThat(logout.statusCode()).isIn(200, 204);
+    assertThat(reception.get(week).statusCode()).isEqualTo(401);
+    assertThat(customer.get("check-auth", Map.of()).body().path("authenticated").asBoolean()).isTrue();
+
+    reception.login(staff);
+    jdbc.update("update public.admins set status = 'inactive' where id = ?", staff.id());
+    assertThat(reception.get(week).statusCode()).isIn(401, 403);
+    assertThat(reception.get("/session").body().path("authenticated").asBoolean()).isFalse();
+  }
+
+  @Test
+  void staffCanConfirmOnceAndTheAuditRecordsWhoChangedTheBooking() throws Exception {
+    CustomerSession owner = customer("reception-confirm");
+    LocalDate arrival = futureDate(80);
+    LocalDate departure = arrival.plusDays(2);
+    var created = owner.post("create-booking", booking(6, arrival, departure)).data(201);
+    long id = created.path("id").asLong();
+    StaffAccount staff = staffAccount("confirm-staff", "staff");
+    ReceptionSession reception = new ReceptionSession(new CustomerSession());
+    reception.login(staff);
+
+    String statusRoute = "/bookings/" + id + "/status";
+    assertThat(reception.post(statusRoute, Map.of("expected_status", "pending", "status", "checkout"))
+        .statusCode()).isEqualTo(422);
+    var confirmation = Map.<String, Object>of("expected_status", "pending", "status", "confirmed");
+    var a = reception.sendAsync(reception.request(statusRoute, confirmation, reception.token()));
+    var b = reception.sendAsync(reception.request(statusRoute, confirmation, reception.token()));
+    assertThat(List.of(a.get(20, TimeUnit.SECONDS).statusCode(), b.get(20, TimeUnit.SECONDS).statusCode()))
+        .containsExactlyInAnyOrder(200, 409);
+
+    var week = reception.get("/calendar?from=" + arrival);
+    assertThat(week.statusCode()).isEqualTo(200);
+    assertThat(week.body().path("from").asString()).isEqualTo(arrival.toString());
+    assertThat(week.body().path("to").asString()).isEqualTo(arrival.plusDays(7).toString());
+    assertThat(week.body().path("bookings").findValues("status").stream()
+        .map(JsonNode::asString).toList()).contains("confirmed");
+    var detail = owner.get("booking-detail", Map.of("id", Long.toString(id))).data(200);
+    assertThat(detail.path("status").asString()).isEqualTo("confirmed");
+    assertThat(detail.path("confirmed_at").asString()).isNotBlank();
+    assertThat(reception.post(statusRoute, Map.of("expected_status", "confirmed", "status", "checkin"))
+        .statusCode()).isEqualTo(422);
+    assertThat(jdbc.queryForList("""
+        select concat(old_value_json->>'status', '->', new_value_json->>'status')
+        from public.audit_logs
+        where admin_id = ? and entity_id = ? and action = 'CHANGE_BOOKING_STATUS'
+        """, String.class, staff.id(), id)).containsExactly("pending->confirmed");
+  }
+
+  @Test
+  void receptionRecordsArrivalAndDepartureOnTheScheduledDates() throws Exception {
+    StaffAccount staff = staffAccount("lifecycle-staff", "staff");
+    ReceptionSession reception = new ReceptionSession(new CustomerSession());
+    reception.login(staff);
+    long booking = jdbc.queryForObject("""
+        insert into public.bookings
+          (booking_reference, customer_id, unit_id, guest_name, check_in, check_out,
+           number_of_nights, subtotal, total_amount, status)
+        values ('RECEPTION-LIFECYCLE', 1, 16, 'Demo', current_date - 1, current_date,
+                1, 100000, 100000, 'confirmed')
+        returning id
+        """, Long.class);
+    String route = "/bookings/" + booking + "/status";
+    var checkin = Map.<String, Object>of("expected_status", "confirmed", "status", "checkin");
+    assertThat(reception.post(route, checkin).statusCode()).isEqualTo(422);
+
+    jdbc.update("update public.bookings set check_in = current_date, check_out = current_date + 1 where id = ?",
+        booking);
+    assertThat(reception.post(route, checkin).statusCode()).isEqualTo(200);
+    var checkout = Map.<String, Object>of("expected_status", "checkin", "status", "checkout");
+    assertThat(reception.post(route, checkout).statusCode()).isEqualTo(422);
+
+    jdbc.update("update public.bookings set check_in = current_date - 1, check_out = current_date where id = ?",
+        booking);
+    var result = reception.post(route, checkout);
+    assertThat(result.statusCode()).isEqualTo(200);
+    assertThat(result.body().path("status").asString()).isEqualTo("checkout");
+    assertThat(jdbc.queryForObject("""
+        select checked_in_at is not null and checked_out_at is not null
+        from public.bookings where id = ?
+        """, Boolean.class, booking)).isTrue();
+  }
+
+  @Test
+  void managerBlockAffectsAvailabilityAndCanBeRemoved() throws Exception {
+    CustomerSession guest = new CustomerSession();
+    LocalDate start = futureDate(90);
+    LocalDate end = start.plusDays(2);
+    var block = block(6, start, end);
+    var stay = stayQuery(6, start, end);
+    StaffAccount staff = staffAccount("block-staff", "staff");
+    ReceptionSession staffSession = new ReceptionSession(new CustomerSession());
+    staffSession.login(staff);
+    assertThat(staffSession.post("/blocks", block).statusCode()).isEqualTo(403);
+    assertThat(guest.get("availability", stay).data(200).path("available").asBoolean()).isTrue();
+
+    StaffAccount manager = staffAccount("block-manager", "manager");
+    ReceptionSession reception = new ReceptionSession(new CustomerSession());
+    reception.login(manager);
+    assertThat(reception.get("/session").body().path("can_manage_blocks").asBoolean()).isTrue();
+    assertThat(reception.post("/blocks", block).statusCode()).isEqualTo(201);
+    assertThat(reception.post("/blocks", block).statusCode()).isEqualTo(409);
+    assertThat(guest.get("availability", stay).data(200).path("available").asBoolean()).isFalse();
+    assertThat(guest.get("availability", stayQuery(6, end, end.plusDays(1))).data(200)
+        .path("available").asBoolean()).isTrue();
+
+    var calendar = reception.get("/calendar?from=" + start);
+    assertThat(calendar.statusCode()).isEqualTo(200);
+    var blocks = calendar.body().path("blocks");
+    assertThat(blocks.size()).isEqualTo(1);
+    long id = blocks.path(0).path("id").asLong();
+    assertThat(id).isPositive();
+    assertThat(blocks.path(0).path("reason").asString()).isEqualTo("maintenance");
+    String removal = "/blocks/" + id + "/remove";
+    assertThat(staffSession.post(removal, Map.of()).statusCode()).isEqualTo(403);
+    assertThat(reception.post(removal, Map.of()).statusCode()).isIn(200, 204);
+    assertThat(guest.get("availability", stay).data(200).path("available").asBoolean()).isTrue();
+    assertThat(jdbc.queryForList("""
+        select action from public.audit_logs
+        where admin_id = ? and entity_id = ? and entity_type = 'availability_blocks'
+        order by id
+        """, String.class, manager.id(), id)).containsExactly("BLOCK_DATES", "UNBLOCK_DATES");
+  }
+
+  @Test
+  void competingCustomerBookingAndManagerBlockCannotBothWin() throws Exception {
+    CustomerSession owner = customer("reception-block-race");
+    StaffAccount manager = staffAccount("race-manager", "manager");
+    ReceptionSession reception = new ReceptionSession(new CustomerSession());
+    reception.login(manager);
+    long unit = 7;
+    LocalDate start = futureDate(110);
+    LocalDate end = start.plusDays(2);
+
+    HttpRequest booking = owner.postRequest("create-booking", booking(unit, start, end), true);
+    HttpRequest block = reception.request("/blocks", block(unit, start, end), reception.token());
+    var a = owner.client.sendAsync(booking, HttpResponse.BodyHandlers.ofString());
+    var b = reception.sendAsync(block);
+    assertThat(List.of(a.get(20, TimeUnit.SECONDS).statusCode(), b.get(20, TimeUnit.SECONDS).statusCode()))
+        .containsExactlyInAnyOrder(201, 409);
+  }
+
+  private StaffAccount staffAccount(String username, String role) {
+    String hash = new BCryptPasswordEncoder(4).encode(TEST_PASSWORD);
+    long id = jdbc.queryForObject("""
+        insert into public.admins (username, email, password_hash, full_name, role)
+        values (?, ?, ?, ?, ?) returning id
+        """, Long.class, username, username + "@example.test", hash, "Reception test " + username, role);
+    return new StaffAccount(id, username);
+  }
+
+  private static Map<String, Object> block(long unitId, LocalDate start, LocalDate end) {
+    return Map.of("unit_id", unitId, "start_date", start.toString(), "end_date", end.toString(),
+        "reason", "maintenance");
+  }
+
+  private record StaffAccount(long id, String username) {
+    Map<String, Object> credentials() {
+      return Map.of("username", username, "password", TEST_PASSWORD);
+    }
+  }
+
+  private final class ReceptionSession {
+    private final CustomerSession browser;
+
+    ReceptionSession(CustomerSession browser) {
+      this.browser = browser;
+    }
+
+    void login(StaffAccount staff) throws Exception {
+      var result = post("/login", staff.credentials());
+      assertThat(result.statusCode()).as("Reception login: %s", result.body()).isEqualTo(200);
+      assertThat(get("/session").body().path("authenticated").asBoolean()).isTrue();
+    }
+
+    String token() throws Exception {
+      String token = get("/session").body().path("csrf").asString();
+      assertThat(token).isNotBlank();
+      return token;
+    }
+
+    Result get(String path) throws Exception {
+      return browser.send(builder(path).GET().build());
+    }
+
+    Result post(String path, Map<String, Object> body) throws Exception {
+      return post(path, body, token());
+    }
+
+    Result post(String path, Map<String, Object> body, String csrf) throws Exception {
+      return browser.send(request(path, body, csrf));
+    }
+
+    HttpRequest request(String path, Map<String, Object> body, String csrf) {
+      var builder = builder(path).header("Content-Type", "application/json")
+          .POST(HttpRequest.BodyPublishers.ofString(JSON.writeValueAsString(body)));
+      if (csrf != null) builder.header("X-CSRF-Token", csrf);
+      return builder.build();
+    }
+
+    java.util.concurrent.CompletableFuture<HttpResponse<String>> sendAsync(HttpRequest request) {
+      return browser.client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpRequest.Builder builder(String path) {
+      return HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/api/reception" + path))
+          .timeout(HTTP_TIMEOUT);
+    }
   }
 
   private CustomerSession customer(String suffix) throws Exception {

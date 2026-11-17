@@ -43,7 +43,8 @@ class CustomerSecurity {
     return http
         .authorizeHttpRequests(routes -> routes
             .requestMatchers("/", "/health", "/error", "/customer", "/customer/**",
-                "/assets/favicon.svg", "/assets/images/**", "/backend/customer-api.php").permitAll()
+                "/assets/favicon.svg", "/assets/images/**", "/backend/customer-api.php",
+                "/reception", "/reception/**").permitAll()
             .anyRequest().denyAll())
         .securityContext(security -> security.securityContextRepository(contexts))
         .csrf(csrf -> csrf

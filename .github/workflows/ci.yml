@@ -30,6 +30,7 @@ jobs:
           node --check customer/js/ui.js
           node --check admin/js/admin.js
           node --check staff/js/staff.js
+          node --check java-backend/src/main/resources/static/reception/app.js
 
   java-booking:
     runs-on: ubuntu-24.04

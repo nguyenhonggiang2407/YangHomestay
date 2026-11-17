@@ -23,14 +23,21 @@ Compose chạy PostgreSQL ở cổng `55432` trên loopback. Lần đầu nó kh
 - Khi căn hết chỗ, API tìm tối đa ba khoảng cùng số đêm, với ngày nhận phòng trong 30 ngày sau ngày đã chọn. Chọn gợi ý sẽ tính lại giá và kiểm tra phòng trống.
 - Khi ghi đơn, PostgreSQL dùng `create_booking_atomic` để khóa theo căn, kiểm tra lịch, tính lại giá và lưu đơn cùng giá từng đêm trong một transaction. Ngày trả phòng không tính vào kỳ ở, nên hai lượt có thể liền kề.
 - Khách có thể lưu hoặc bỏ căn trong **Yêu thích**. Backend gắn danh sách với tài khoản đăng nhập. Hai yêu cầu lưu cùng căn chỉ tạo một bản ghi.
-- Trang quản trị, YangMatch và gửi đánh giá tiếp tục thuộc bản PHP. Bản Java phục vụ giao diện và API của luồng thử riêng trên máy.
+- YangMatch, gửi đánh giá và phần quản trị giá, tài khoản nội bộ tiếp tục thuộc bản PHP.
+
+## Lịch vận hành cho lễ tân
+
+Đặt `YANGHOMESTAY_RECEPTION_ENABLED=true` trước khi chạy JAR cục bộ, sau đó mở [màn hình lễ tân](http://127.0.0.1:8080/reception/). Với PostgreSQL demo đã khởi tạo bằng Compose, dùng tài khoản mẫu `staff / staff123` hoặc `manager / manager123`. Chỉ dùng các tài khoản mẫu này với database thử trên máy.
+
+- **Lễ tân** xem lịch bảy ngày theo căn. Có thể xác nhận đơn, ghi nhận đến ngày nhận phòng và hoàn tất khi đến ngày trả phòng. Nếu người khác đã đổi trạng thái, hệ thống yêu cầu tải lại lịch.
+- **Quản lý** và **quản trị viên** có thể đóng hoặc mở ngày cho từng căn. API đóng ngày dùng cùng khóa PostgreSQL với luồng đặt phòng để hai thao tác không ghi chồng lên nhau.
+- Mỗi lần đổi trạng thái, đóng ngày hoặc mở lại ngày ghi thông tin người thao tác trong `audit_logs` cùng transaction. Phiên lễ tân có thông tin xác thực và token CSRF riêng với phiên khách.
 
 ## Kiểm thử
 
-`mvn verify` khởi tạo PostgreSQL tạm thời riêng để kiểm tra API, kể cả lúc Compose chưa chạy. Các ca kiểm tra mới bao phủ lịch gợi ý qua ngày trả phòng, giới hạn 30 ngày, thao tác lưu lặp và quyền sở hữu danh sách yêu thích. CI chạy cả bộ kiểm tra PHP hiện có và bài kiểm thử Java.
+`mvn verify` khởi tạo PostgreSQL tạm thời để kiểm tra API, kể cả lúc Compose chưa chạy. Các ca kiểm tra bao phủ quyền lễ tân và quản lý, ghi nhật ký, hai người xác nhận cùng một đơn và tranh chấp giữa đặt phòng với đóng ngày. CI chạy cả bộ kiểm tra PHP và Java.
 
 ## Hướng phát triển
 
-1. **Lịch vận hành cho lễ tân.** Quản lý ngày đóng bán để dọn phòng hoặc bảo trì, xác nhận và cập nhật trạng thái đơn theo quyền. Ghi nhật ký người thực hiện và kiểm tra khi hai nhân viên cùng sửa một đơn.
-2. **YangMatch trên Java.** Lọc căn theo ngày, sức chứa và ngân sách, sau đó xếp hạng theo tiện nghi và mục đích chuyến đi. Hiển thị lý do cho từng kết quả.
-3. **Thông báo theo trạng thái đơn.** Gửi xác nhận hoặc thông báo hủy sau khi transaction thành công. Kiểm tra gửi lại mà khách chỉ nhận một thông báo.
+1. **YangMatch trên Java.** Lọc căn theo ngày, sức chứa và ngân sách, sau đó xếp hạng theo tiện nghi và mục đích chuyến đi. Hiển thị lý do cho từng kết quả.
+2. **Thông báo theo trạng thái đơn.** Gửi xác nhận hoặc thông báo hủy sau khi transaction thành công. Kiểm tra gửi lại mà khách chỉ nhận một thông báo.

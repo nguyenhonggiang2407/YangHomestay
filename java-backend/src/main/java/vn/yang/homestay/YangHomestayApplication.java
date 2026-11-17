@@ -28,6 +28,11 @@ class CustomerPages {
     return "redirect:/customer/index.html";
   }
 
+  @GetMapping({"/reception", "/reception/"})
+  String reception() {
+    return "redirect:/reception/index.html";
+  }
+
   @GetMapping("/health")
   @ResponseBody
   Map<String, String> health() {

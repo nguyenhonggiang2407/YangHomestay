@@ -7,7 +7,7 @@ và Supabase PostgreSQL.
 [Kiến trúc và đặt phòng](docs/architecture.md) ·
 [Cài đặt](#cài-đặt) · [Kết quả kiểm tra](docs/verification.md)
 
-Bản Spring Boot dùng lại giao diện khách cho luồng tìm căn, báo giá, đặt phòng và xem đơn.
+Bản Spring Boot dùng lại giao diện khách cho luồng tìm căn, báo giá, đặt phòng và xem đơn. Lễ tân có lịch vận hành riêng để theo dõi và cập nhật đơn.
 Demo công khai ở trên chạy bản PHP. [Chạy bản Java với PostgreSQL](java-backend/README.md).
 
 ![Trang chủ ứng dụng đang chạy trên desktop](docs/screenshots/home-desktop.jpg)
