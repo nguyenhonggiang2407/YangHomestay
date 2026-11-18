@@ -120,7 +120,8 @@
       UI.injectHeader();
       UI.injectFooter();
 
-      var unitId = Number(new URLSearchParams(location.search).get('id')) || 0;
+      var search = new URLSearchParams(location.search);
+      var unitId = Number(search.get('id')) || 0;
       if (unitId) document.getElementById('canonical-url').href = 'https://yanghomestay.helioho.st/customer/unit-detail.html?id=' + unitId;
       var unit = null;
       var quote = null;
@@ -246,6 +247,21 @@
         co.addEventListener('change', refreshQuote);
         document.getElementById('bk-guests').addEventListener('change', refreshQuote);
         document.getElementById('bk-promo').addEventListener('change', refreshQuote);
+
+        var requestedGuests = search.get('guests');
+        if (/^[1-9][0-9]*$/.test(requestedGuests || '') && Number(requestedGuests) <= maxG) {
+          guestsSel.value = requestedGuests;
+        }
+        var requestedIn = search.get('check_in');
+        var requestedOut = search.get('check_out');
+        if (/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(requestedIn || '') &&
+            /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(requestedOut || '') &&
+            !UI.validateDateRange(requestedIn, requestedOut)) {
+          ci.value = requestedIn;
+          co.min = UI.addDaysISO(requestedIn, 1);
+          co.value = requestedOut;
+          refreshQuote();
+        }
       }
 
       function setBookingReady(ready, label) {

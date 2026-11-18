@@ -473,6 +473,23 @@ input, select, textarea { font-family: inherit; font-size: 14px; color: var(--te
 .match-score { font-family: var(--font-serif); font-size: 46px; color: var(--primary-dark); font-weight: 700; }
 .reason-list { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 6px; }
 .reason-list li { font-size: 14px; color: var(--text-soft); }
+.match-stay { min-width: 0; padding: 0 0 22px; margin: 0 0 24px; border: 0; border-bottom: 1px solid var(--border); }
+.match-stay legend { padding: 0; margin-bottom: 8px; font-weight: 700; }
+.match-stay-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+.match-stay-fields > div:last-child { grid-column: 1 / -1; }
+.match-stay-fields label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.match-stay-fields input, .match-stay-fields select { width: 100%; min-width: 0; min-height: 44px; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); font: inherit; }
+.match-input-error { color: var(--danger); font-size: 14px; margin-top: 14px; }
+.match-result-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+.match-results-explanation { color: var(--earth-light); margin: 0 auto 24px; max-width: 740px; }
+.match-card-footer { align-items: flex-start; flex-direction: column; gap: 14px; }
+.match-total { display: grid; gap: 3px; }
+.match-total b { font-size: 19px; color: var(--text); }
+.match-total span, .match-total small { font-size: 13px; color: var(--text-soft); }
+#match-budget-hint { margin: -10px 0 16px; }
+@media (max-width: 360px) {
+  .match-stay-fields { grid-template-columns: minmax(0, 1fr); }
+}
 
 /* ── Map ── */
 .map-wrap { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); min-height: 420px; }

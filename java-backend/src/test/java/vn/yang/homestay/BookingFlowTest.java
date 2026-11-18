@@ -443,6 +443,156 @@ class BookingFlowTest {
         .containsExactlyInAnyOrder(201, 409);
   }
 
+  @Test
+  void yangMatchRequiresCsrfAndRejectsInvalidTripCriteria() throws Exception {
+    CustomerSession guest = new CustomerSession();
+    var answers = matchAnswers("couple", "modern", List.of(), 1200000);
+    assertThat(guest.post("yangmatch", answers, false).statusCode()).isEqualTo(419);
+    assertThat(guest.get("get-csrf", Map.of()).data(200)
+        .path("capabilities").path("yangmatch_stay_search").asBoolean()).isTrue();
+    assertThat(guest.post("yangmatch", answers).data(200).path("pricing_basis").asString())
+        .isEqualTo("base");
+    assertThat(guest.get("check-auth", Map.of()).body().path("authenticated").asBoolean()).isFalse();
+
+    for (Map<String, Object> invalid : List.<Map<String, Object>>of(
+        Map.of("q1", "unknown"),
+        Map.of("q3", "workspace"),
+        Map.of("q3", List.of("unsupported-amenity")),
+        Map.of("q4", -1),
+        Map.of("q4", 1.5),
+        Map.of("guests", 1),
+        Map.of("check_in", futureDate(700).toString()),
+        Map.of("check_in", "2027-02-30", "check_out", "2027-03-02"),
+        Map.of("check_in", futureDate(702).toString(), "check_out", futureDate(701).toString()))) {
+      var input = new LinkedHashMap<>(answers);
+      input.putAll(invalid);
+      assertThat(guest.post("yangmatch", input).statusCode()).as("Criteria: %s", invalid)
+          .isEqualTo(422);
+    }
+  }
+
+  @Test
+  void datedYangMatchFiltersActualPriceAvailabilityCapacityAndActiveCatalog() throws Exception {
+    long property = matchProperty("dated-active", "active");
+    long inactiveProperty = matchProperty("dated-inactive", "inactive");
+    try {
+      long suitable = matchUnit(property, "suitable", 100, 2, "active");
+      long seasonal = matchUnit(property, "seasonal", 100, 2, "active");
+      long blocked = matchUnit(property, "blocked", 100, 2, "active");
+      matchUnit(property, "too-small", 100, 1, "active");
+      matchUnit(property, "inactive", 100, 2, "inactive");
+      matchUnit(inactiveProperty, "inactive-parent", 100, 2, "active");
+      LocalDate arrival = futureDate(700);
+      LocalDate departure = arrival.plusDays(2);
+      jdbc.update("""
+          insert into public.rate_rules (unit_id, name, start_date, end_date, price, priority)
+          values (?, 'Test exact nightly price', ?, ?, 1000, 32000),
+                 (?, 'Test seasonal price', ?, ?, 2000, 32000)
+          """, suitable, arrival, departure, seasonal, arrival, departure);
+      jdbc.update("""
+          insert into public.availability_blocks (unit_id, start_date, end_date, reason)
+          values (?, ?, ?, 'maintenance')
+          """, blocked, arrival, departure);
+
+      CustomerSession guest = new CustomerSession();
+      var input = matchAnswers("couple", "modern", List.of(), 1500);
+      input.put("check_in", arrival.toString());
+      input.put("check_out", departure.toString());
+      input.put("guests", 2);
+      var data = guest.post("yangmatch", input).data(200);
+      assertThat(data.path("pricing_basis").asString()).isEqualTo("stay");
+      var matches = data.path("matches");
+      assertThat(matches.size()).isEqualTo(1);
+      assertThat(matches.path(0).path("unit").path("id").asLong()).isEqualTo(suitable);
+      var quoted = guest.get("booking-quote", stayQuery(suitable, arrival, departure)).data(200);
+      var recommendedQuote = matches.path(0).path("quote");
+      assertThat(recommendedQuote.path("subtotal").asLong()).isEqualTo(2000);
+      assertThat(recommendedQuote.path("number_of_nights").asInt()).isEqualTo(2);
+      assertThat(recommendedQuote.path("total_amount").asLong())
+          .isEqualTo(quoted.path("total_amount").asLong());
+      assertThat(recommendedQuote.path("cleaning_fee").asLong())
+          .isEqualTo(quoted.path("cleaning_fee").asLong());
+
+      input.put("q4", 10);
+      assertThat(guest.post("yangmatch", input).data(200).path("matches").size()).isZero();
+      input.put("q4", 2500);
+      assertThat(guest.post("yangmatch", input).data(200).path("matches").size()).isEqualTo(2);
+
+      input.put("q4", 1500);
+      input.put("check_in", departure.toString());
+      input.put("check_out", departure.plusDays(2).toString());
+      var adjacent = guest.post("yangmatch", input).data(200).path("matches");
+      assertThat(adjacent.findValues("unit").stream().map(unit -> unit.path("id").asLong()).toList())
+          .contains(blocked);
+    } finally {
+      removeMatchProperty(property);
+      removeMatchProperty(inactiveProperty);
+    }
+  }
+
+  @Test
+  void yangMatchRankingIsDeterministicAndDuplicatePreferencesDoNotInflateScores() throws Exception {
+    long property = matchProperty("ranking", "active");
+    try {
+      long suitable = matchUnit(property, "ranked", 1000, 2, "active");
+      long firstTie = matchUnit(property, "tie-first", 1200, 2, "active");
+      long secondTie = matchUnit(property, "tie-second", 1200, 2, "active");
+      jdbc.update("""
+          insert into public.unit_experience_tags (unit_id, tag_id, weight)
+          select ?, id, 10 from public.experience_tags where code in ('solo', 'modern')
+          """, suitable);
+      jdbc.update("""
+          insert into public.unit_amenities (unit_id, amenity_id)
+          select ?, id from public.amenities where code = 'workspace'
+          """, suitable);
+      CustomerSession guest = new CustomerSession();
+      var input = matchAnswers("solo", "modern", List.of("workspace"), 1500);
+      var singlePreference = guest.post("yangmatch", input).data(200);
+      var matches = singlePreference.path("matches");
+      assertThat(matches.size()).isEqualTo(3);
+      assertThat(matches.path(0).path("unit").path("id").asLong()).isEqualTo(suitable);
+      assertThat(matches.path(1).path("unit").path("id").asLong()).isEqualTo(firstTie);
+      assertThat(matches.path(2).path("unit").path("id").asLong()).isEqualTo(secondTie);
+      assertThat(matches.path(0).path("score_raw").asDouble())
+          .isGreaterThan(matches.path(1).path("score_raw").asDouble());
+      assertThat(matches.path(0).path("reasons").size()).isPositive();
+      assertThat(guest.post("yangmatch", input).data(200).path("matches")).isEqualTo(matches);
+
+      input.put("q3", List.of("workspace", "workspace"));
+      var duplicatePreference = guest.post("yangmatch", input).data(200);
+      assertThat(duplicatePreference.path("answers").path("q3").size()).isEqualTo(1);
+      assertThat(duplicatePreference.path("matches").path(0).path("score_raw"))
+          .isEqualTo(matches.path(0).path("score_raw"));
+    } finally {
+      removeMatchProperty(property);
+    }
+  }
+
+  private static Map<String, Object> matchAnswers(String companion, String style,
+      List<String> amenities, long budget) {
+    return new LinkedHashMap<>(Map.of("q1", companion, "q2", style, "q3", amenities, "q4", budget));
+  }
+
+  private long matchProperty(String name, String status) {
+    return jdbc.queryForObject("""
+        insert into public.properties (code, name, slug, district, status)
+        values (?, ?, ?, 'Hoàn Kiếm', ?) returning id
+        """, Long.class, "YM-" + name, "YangMatch test " + name, "yangmatch-test-" + name, status);
+  }
+
+  private long matchUnit(long property, String name, long price, int guests, String status) {
+    return jdbc.queryForObject("""
+        insert into public.units (property_id, code, name, slug, base_price, cleaning_fee, max_guests, status)
+        values (?, ?, ?, ?, ?, 100, ?, ?) returning id
+        """, Long.class, property, "YM-" + name, "YangMatch test " + name,
+        "yangmatch-test-" + name, price, guests, status);
+  }
+
+  private void removeMatchProperty(long property) {
+    jdbc.update("delete from public.units where property_id = ?", property);
+    jdbc.update("delete from public.properties where id = ?", property);
+  }
+
   private StaffAccount staffAccount(String username, String role) {
     String hash = new BCryptPasswordEncoder(4).encode(TEST_PASSWORD);
     long id = jdbc.queryForObject("""

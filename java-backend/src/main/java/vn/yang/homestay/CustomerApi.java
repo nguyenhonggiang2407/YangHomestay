@@ -31,16 +31,18 @@ class CustomerApi {
   private final CatalogService catalog;
   private final BookingService bookings;
   private final FavoritesService favorites;
+  private final YangMatchService matches;
   private final CustomerAccounts accounts;
   private final AuthenticationManager authenticationManager;
   private final HttpSessionSecurityContextRepository contexts;
 
-  CustomerApi(CatalogService catalog, BookingService bookings, FavoritesService favorites,
+  CustomerApi(CatalogService catalog, BookingService bookings, FavoritesService favorites, YangMatchService matches,
       CustomerAccounts accounts, AuthenticationManager authenticationManager,
       HttpSessionSecurityContextRepository contexts) {
     this.catalog = catalog;
     this.bookings = bookings;
     this.favorites = favorites;
+    this.matches = matches;
     this.accounts = accounts;
     this.authenticationManager = authenticationManager;
     this.contexts = contexts;
@@ -49,7 +51,8 @@ class CustomerApi {
   @GetMapping
   Object read(@RequestParam Map<String, String> query, Authentication authentication, CsrfToken csrf) {
     return switch (query.getOrDefault("action", "")) {
-      case "get-csrf" -> success(Map.of("token", csrf.getToken()));
+      case "get-csrf" -> success(Map.of("token", csrf.getToken(),
+          "capabilities", Map.of("yangmatch_stay_search", true)));
       case "check-auth" -> checkAuth(authentication);
       case "get-profile" -> success(requireCustomer(authentication));
       case "units" -> success(catalog.units(query));
@@ -63,7 +66,7 @@ class CustomerApi {
       case "booking-detail" -> success(bookings.detail(customerId(authentication), id(query, "id")));
       case "favorites" -> success(favorites.list(customerId(authentication)));
       case "login", "register", "logout", "create-booking", "cancel-booking", "add-favorite",
-          "remove-favorite" ->
+          "remove-favorite", "yangmatch" ->
           throw new ApiProblem(405, "Thao tác này cần dùng POST.");
       default -> throw unsupported();
     };
@@ -73,6 +76,7 @@ class CustomerApi {
   Object write(@RequestParam(defaultValue = "") String action, @RequestBody Map<String, Object> input,
       Authentication authentication, HttpServletRequest request, HttpServletResponse response) {
     return switch (action) {
+      case "yangmatch" -> success(matches.match(input));
       case "register" -> {
         accounts.register(input);
         yield ResponseEntity.status(201).body(new Result(true, "Đã tạo tài khoản.", null));
