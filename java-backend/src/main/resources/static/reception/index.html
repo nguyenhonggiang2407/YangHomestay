@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Lễ tân · YangHomestay</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Đến nội dung</a>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="../customer/" aria-label="Trang khách YangHomestay">
+        <span class="brand-mark" aria-hidden="true">Y</span>
+        <span>YangHomestay <small>Lễ tân</small></span>
+      </a>
+      <div class="account" id="account" hidden>
+        <span id="account-name"></span>
+        <button type="button" class="button secondary" id="logout">Đăng xuất</button>
+      </div>
+    </div>
+  </header>
+  <main id="main" class="shell">
+    <p id="notice" class="notice" role="status" hidden></p>
+    <div id="connection" class="connection">
+      <p id="connection-status" role="status">Đang kiểm tra phiên làm việc…</p>
+      <button type="button" class="button secondary" id="retry" hidden>Thử lại</button>
+    </div>
+    <section class="login card" id="sign-in" aria-labelledby="login-title" hidden>
+      <h1 id="login-title">Đăng nhập lễ tân</h1>
+      <form id="login-form">
+        <label for="username">Tên tài khoản</label>
+        <input id="username" name="username" autocomplete="username" required maxlength="50">
+        <label for="password">Mật khẩu</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="72">
+        <button class="button primary" type="submit">Đăng nhập</button>
+      </form>
+    </section>
+    <section id="dashboard" hidden>
+      <div class="page-heading">
+        <div>
+          <h1 id="dashboard-title" tabindex="-1">Lịch vận hành</h1>
+          <p id="week-range"></p>
+        </div>
+        <div class="week-nav" aria-label="Điều hướng tuần">
+          <button type="button" class="button secondary" id="previous-week" aria-label="Tuần trước">←</button>
+          <button type="button" class="button secondary" id="today">Hôm nay</button>
+          <button type="button" class="button secondary" id="next-week" aria-label="Tuần tiếp theo">→</button>
+        </div>
+      </div>
+      <section class="card calendar" aria-labelledby="calendar-title" id="calendar">
+        <h2 id="calendar-title" class="visually-hidden">Lịch phòng theo căn</h2>
+        <form class="filter-form" id="calendar-form">
+          <div class="field">
+            <label for="calendar-from">Ngày đầu lịch</label>
+            <input type="date" id="calendar-from" name="from" min="0001-01-01" max="9999-12-24" required>
+          </div>
+          <div class="field">
+            <label for="calendar-unit">Căn</label>
+            <select id="calendar-unit" name="unit">
+              <option value="">Tất cả căn</option>
+            </select>
+          </div>
+          <button type="submit" class="button secondary">Xem lịch</button>
+        </form>
+        <div class="calendar-scroll" tabindex="0" role="region" aria-label="Bảng lịch phòng, cuộn ngang nếu cần">
+          <table id="calendar-grid">
+            <caption class="visually-hidden">Lịch đặt và ngày đóng bán trong bảy ngày</caption>
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="calendar-status" id="calendar-status" role="status" hidden></p>
+      </section>
+      <div class="manage-layout">
+        <section class="card manage-card" aria-labelledby="booking-title">
+          <h2 id="booking-title" tabindex="-1">Đơn đặt</h2>
+          <ul class="entries" id="booking-list"></ul>
+          <p class="empty-state" id="booking-empty">Chưa có đơn trong lịch đang xem.</p>
+        </section>
+        <section class="card manage-card" aria-labelledby="block-title">
+          <h2 id="block-title" tabindex="-1">Đóng ngày</h2>
+          <form id="block-form" class="block-form">
+            <div class="field form-wide">
+              <label for="block-unit">Căn</label>
+              <select id="block-unit" name="unit_id" required></select>
+            </div>
+            <div class="field">
+              <label for="block-start">Ngày bắt đầu</label>
+              <input id="block-start" name="start_date" type="date" max="9999-12-30" required>
+            </div>
+            <div class="field">
+              <label for="block-end">Ngày mở lại</label>
+              <input id="block-end" name="end_date" type="date" max="9999-12-31" required>
+            </div>
+            <div class="field form-wide">
+              <label for="block-reason">Lý do</label>
+              <select id="block-reason" name="reason" required>
+                <option value="maintenance">Bảo trì</option>
+                <option value="cleaning">Dọn phòng</option>
+                <option value="owner_use">Chủ nhà sử dụng</option>
+                <option value="manual_block">Đóng bán thủ công</option>
+                <option value="other">Khác</option>
+              </select>
+            </div>
+            <button type="submit" class="button primary form-wide" id="block-submit" disabled>Đóng ngày</button>
+          </form>
+          <ul class="entries" id="block-list"></ul>
+          <p class="empty-state" id="block-empty">Chưa có ngày đóng bán trong lịch đang xem.</p>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
