@@ -18,6 +18,7 @@ backend/diagnostics/tmp/
 # Temporary files
 *.tmp
 *.bak
+__pycache__/
 
 # OS / editor
 .DS_Store
