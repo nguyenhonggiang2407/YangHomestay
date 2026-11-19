@@ -30,3 +30,5 @@ jobs:
           node --check customer/js/ui.js
           node --check admin/js/admin.js
           node --check staff/js/staff.js
+      - name: Verify PHP web deployment archive
+        run: python3 tools/build-web-release.py "$RUNNER_TEMP/yanghomestay-php-web.zip"

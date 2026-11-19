@@ -6,7 +6,7 @@
   <title>YangMatch - Tìm căn hợp gu - YangHomestay</title>
   <link rel="canonical" href="https://yanghomestay.helioho.st/customer/yangmatch.html">
   <meta name="description" content="YangMatch gợi ý homestay tại Hà Nội dựa trên người đi cùng, phong cách, tiện nghi và ngân sách của bạn.">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20261119">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
@@ -68,7 +68,26 @@
         </div>
 
         <div class="quiz-step" data-step="4">
+          <fieldset class="match-stay hidden" id="match-stay">
+            <legend>Chuyến đi của bạn</legend>
+            <p class="form-hint">Thêm cả hai ngày để tìm căn còn trống và tính giá theo kỳ ở.</p>
+            <div class="match-stay-fields">
+              <div>
+                <label for="match-check-in">Nhận phòng</label>
+                <input type="date" id="match-check-in" aria-describedby="match-input-error">
+              </div>
+              <div>
+                <label for="match-check-out">Trả phòng</label>
+                <input type="date" id="match-check-out" aria-describedby="match-input-error">
+              </div>
+              <div>
+                <label for="match-guests">Số khách</label>
+                <select id="match-guests" aria-describedby="match-input-error"></select>
+              </div>
+            </div>
+          </fieldset>
           <h2>Ngân sách mỗi đêm của bạn?</h2>
+          <p id="match-budget-hint" class="form-hint hidden">Mức tối đa cho giá phòng trung bình mỗi đêm. Phí vệ sinh được hiển thị riêng.</p>
           <div class="quiz-options" data-q="q4">
             <button type="button" class="quiz-option" aria-pressed="false" data-val="700000"><span class="quiz-symbol" aria-hidden="true">N</span>Dưới 700.000 ₫</button>
             <button type="button" class="quiz-option" aria-pressed="false" data-val="1200000"><span class="quiz-symbol" aria-hidden="true">N</span>700.000 – 1.200.000 ₫</button>
@@ -83,18 +102,19 @@
           <span></span>
           <button type="button" class="btn btn-primary hidden" id="q-next">Tiếp theo →</button>
         </div>
+        <p id="match-input-error" class="match-input-error hidden" role="alert"></p>
       </div>
 
       <!-- RESULTS -->
-      <div id="results" class="hidden"></div>
+      <div id="results" class="hidden" aria-live="polite"></div>
     </div>
   </section>
 
   <footer class="site-footer" id="site-footer"></footer>
 
-  <script src="js/config.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/ui.js"></script>
+  <script src="js/config.js?v=20261119"></script>
+  <script src="js/api.js?v=20261119"></script>
+  <script src="js/ui.js?v=20261119"></script>
   <script>
     (function () {
       'use strict';
@@ -103,11 +123,39 @@
       UI.injectFooter();
 
       var step = 1;
-      var answers = { q1: '', q2: '', q3: [], q4: 0 };
+      var answers = { q1: '', q2: '', q3: [], q4: null };
       var TOTAL_STEPS = 4;
+      var minimumGuests = { solo: 1, couple: 2, friends: 3, family: 3, business: 1 };
+      var staySearch = false;
+      var guestsEdited = false;
+      var busy = false;
+      var advanceTimer = null;
+      var guestInput = document.getElementById('match-guests');
+      var arrivalInput = document.getElementById('match-check-in');
+      var departureInput = document.getElementById('match-check-out');
+      for (var guest = 1; guest <= 20; guest++) {
+        guestInput.add(new Option(guest + ' khách', guest));
+      }
+      arrivalInput.min = UI.localDateISO();
+      departureInput.min = UI.addDaysISO(arrivalInput.min, 1);
+      arrivalInput.addEventListener('change', function () {
+        departureInput.min = arrivalInput.value ? UI.addDaysISO(arrivalInput.value, 1) : UI.addDaysISO(UI.localDateISO(), 1);
+      });
+      guestInput.addEventListener('change', function () { guestsEdited = true; });
+      var capabilities = window.YangAPI.get('get-csrf').then(function (j) {
+        staySearch = !!(j.success && j.data && j.data.capabilities && j.data.capabilities.yangmatch_stay_search);
+        if (!staySearch) return;
+        document.getElementById('match-stay').classList.remove('hidden');
+        document.getElementById('match-budget-hint').classList.remove('hidden');
+        document.querySelectorAll('[data-q="q4"] .quiz-option').forEach(function (button) {
+          var amount = Number(button.getAttribute('data-val'));
+          button.lastChild.textContent = amount ? 'Tối đa ' + UI.formatVND(amount) : 'Không giới hạn';
+        });
+      }).catch(function () {});
 
       function showStep(n) {
-        step = n;
+        clearTimeout(advanceTimer);
+        step = Math.max(1, Math.min(TOTAL_STEPS, n));
         var pl = document.getElementById('quiz-progress-label');
         var pb = document.getElementById('quiz-progress-bar');
         if (pl) pl.textContent = step + ' / ' + TOTAL_STEPS;
@@ -116,7 +164,13 @@
           s.classList.toggle('active', Number(s.getAttribute('data-step')) === step);
         });
         document.getElementById('q-prev').classList.toggle('hidden', step === 1);
-        document.getElementById('q-next').classList.toggle('hidden', step === TOTAL_STEPS);
+        var next = document.getElementById('q-next');
+        next.classList.remove('hidden');
+        next.textContent = step === TOTAL_STEPS ? 'Xem gợi ý' : 'Tiếp theo →';
+        next.disabled = (step === 1 && !answers.q1) || (step === 2 && !answers.q2);
+        var heading = document.querySelector('.quiz-step.active h2');
+        heading.tabIndex = -1;
+        heading.focus({ preventScroll: true });
       }
 
       document.querySelectorAll('.quiz-options').forEach(function (group) {
@@ -124,6 +178,7 @@
         var multi = group.getAttribute('data-multi') === '1';
         group.querySelectorAll('.quiz-option').forEach(function (opt) {
           opt.addEventListener('click', function () {
+            if (busy) return;
             var val = opt.getAttribute('data-val');
             if (multi) {
               opt.classList.toggle('selected');
@@ -135,8 +190,13 @@
               opt.classList.add('selected');
               opt.setAttribute('aria-pressed', 'true');
               answers[q] = val;
-              setTimeout(function () {
-                if (step < TOTAL_STEPS) showStep(step + 1);
+              if (q === 'q1' && !guestsEdited) guestInput.value = minimumGuests[val];
+              clearTimeout(advanceTimer);
+              var selectedStep = step;
+              document.getElementById('q-next').disabled = false;
+              advanceTimer = setTimeout(function () {
+                if (step !== selectedStep) return;
+                if (selectedStep < TOTAL_STEPS) showStep(selectedStep + 1);
                 else submit();
               }, 250);
             }
@@ -144,69 +204,149 @@
         });
       });
 
-      document.getElementById('q-prev').addEventListener('click', function () { showStep(step - 1); });
+      document.getElementById('q-prev').addEventListener('click', function () { if (!busy) showStep(step - 1); });
       document.getElementById('q-next').addEventListener('click', function () {
         if (step < TOTAL_STEPS) showStep(step + 1);
         else submit();
       });
 
-      function submit() {
-        if (!answers.q1 || !answers.q2 || !answers.q4 && answers.q4 !== '0') {
-          UI.toast('Vui lòng trả lời đầy đủ các câu hỏi', 'error');
+      function inputError(message, focus) {
+        var error = document.getElementById('match-input-error');
+        error.textContent = message;
+        error.classList.remove('hidden');
+        if (focus) focus.focus();
+      }
+
+      function editAnswers() {
+        document.getElementById('results').classList.add('hidden');
+        document.getElementById('quiz').classList.remove('hidden');
+        showStep(TOTAL_STEPS);
+      }
+
+      function resultState(title, message, retry) {
+        var box = document.getElementById('results');
+        box.innerHTML = '<div class="state-box"><h2 id="match-results-title" tabindex="-1">' + UI.esc(title) + '</h2><p>' + UI.esc(message) + '</p><div class="match-result-actions"></div></div>';
+        var actions = box.querySelector('.match-result-actions');
+        if (retry) {
+          var retryButton = document.createElement('button');
+          retryButton.type = 'button';
+          retryButton.className = 'btn btn-primary';
+          retryButton.textContent = 'Thử lại';
+          retryButton.addEventListener('click', submit);
+          actions.appendChild(retryButton);
+        }
+        var edit = document.createElement('button');
+        edit.type = 'button';
+        edit.className = 'btn btn-outline';
+        edit.textContent = 'Đổi lựa chọn';
+        edit.addEventListener('click', editAnswers);
+        actions.appendChild(edit);
+        document.getElementById('match-results-title').focus();
+      }
+
+      async function submit() {
+        clearTimeout(advanceTimer);
+        if (busy) return;
+        busy = true;
+        document.getElementById('q-next').disabled = true;
+        await capabilities;
+        document.getElementById('match-input-error').classList.add('hidden');
+        if (!answers.q1 || !answers.q2 || answers.q4 === null) {
+          busy = false;
+          showStep(!answers.q1 ? 1 : !answers.q2 ? 2 : TOTAL_STEPS);
+          inputError('Vui lòng chọn người đi cùng, phong cách và ngân sách.');
           return;
+        }
+        var body = {
+          q1: answers.q1,
+          q2: answers.q2,
+          q3: Array.isArray(answers.q3) ? answers.q3 : [],
+          q4: Number(answers.q4)
+        };
+        if (staySearch) {
+          var arrival = arrivalInput.value;
+          var departure = departureInput.value;
+          var dateError = arrival || departure ? UI.validateDateRange(arrival, departure) : null;
+          if (dateError || Number(guestInput.value) < minimumGuests[answers.q1]) {
+            busy = false;
+            showStep(TOTAL_STEPS);
+            inputError(dateError || 'Số khách tối thiểu cho lựa chọn này là ' + minimumGuests[answers.q1] + '.',
+              dateError ? (!arrival ? arrivalInput : departureInput) : guestInput);
+            return;
+          }
+          body.guests = Number(guestInput.value);
+          if (arrival) {
+            body.check_in = arrival;
+            body.check_out = departure;
+          }
         }
         var quiz = document.getElementById('quiz');
         var results = document.getElementById('results');
         quiz.classList.add('hidden');
         results.classList.remove('hidden');
-        results.innerHTML = '<div class="state-box"><div class="skeleton" style="height:40px;max-width:300px;margin:0 auto 12px"></div><div class="skeleton" style="height:20px;max-width:220px;margin:0 auto"></div></div>';
-
-        var body = {
-          q1: answers.q1,
-          q2: answers.q2,
-          q3: Array.isArray(answers.q3) ? answers.q3 : [],
-          q4: Number(answers.q4) || 0
-        };
-
-        window.YangAPI.post('yangmatch', body).then(function (j) {
+        results.setAttribute('aria-busy', 'true');
+        results.innerHTML = '<div class="state-box" role="status">Đang tìm căn phù hợp…</div>';
+        try {
+          var j = await window.YangAPI.post('yangmatch', body);
           if (!j.success) {
-            results.innerHTML = '<div class="state-box"><h3>' + UI.esc(j.message || 'Lỗi') + '</h3><button type="button" class="btn btn-primary" onclick="location.reload()">Thử lại</button></div>';
+            resultState('Chưa thể tải gợi ý', j.message || 'Vui lòng thử lại.', true);
             return;
           }
           renderMatches(j.data);
-        }).catch(function () {
-          results.innerHTML = '<div class="state-box"><h3>Không kết nối được máy chủ</h3></div>';
-        });
+        } catch (error) {
+          resultState('Không kết nối được máy chủ', 'Bạn có thể thử lại hoặc đổi lựa chọn.', true);
+        } finally {
+          busy = false;
+          document.getElementById('q-next').disabled = false;
+          results.removeAttribute('aria-busy');
+        }
       }
 
       function renderMatches(data) {
         var matches = data.matches || [];
         var box = document.getElementById('results');
         if (!matches.length) {
-          box.innerHTML = '<div class="state-box"><span class="emoji">🔍</span><h3>Chưa có căn phù hợp</h3><p>Hãy thử nới rộng ngân sách hoặc thay đổi lựa chọn.</p><button type="button" class="btn btn-primary" onclick="location.reload()">Làm lại</button></div>';
+          resultState('Chưa có căn phù hợp', 'Hãy thử ngày khác, nới rộng ngân sách hoặc đổi lựa chọn.', false);
           return;
         }
-        box.innerHTML = '<h2 class="text-center" style="margin-bottom:6px">3 căn hợp gu bạn nhất</h2>' +
-          '<p class="text-center" style="color:var(--earth-light);margin-bottom:24px">Kết quả được xếp hạng theo lựa chọn của bạn; ngân sách có dung sai tối đa 20% để tránh gợi ý quá xa mức mong muốn.</p>' +
+        var stayPricing = data.pricing_basis === 'stay';
+        var explanation = stayPricing
+          ? 'Căn còn trống cho ' + data.answers.guests + ' khách, từ ' + UI.fmtDate(data.answers.check_in) + ' đến ' + UI.fmtDate(data.answers.check_out) + '. Giá phòng trung bình mỗi đêm nằm trong ngân sách; tổng tiền gồm phí vệ sinh.'
+          : data.pricing_basis === 'base'
+            ? 'Giá cơ bản mỗi đêm nằm trong ngân sách. Thêm ngày ở để kiểm tra phòng trống và giá từng đêm.'
+            : 'Kết quả theo lựa chọn của bạn, dùng giá cơ bản và dung sai ngân sách tối đa 20%.';
+        box.innerHTML = '<h2 class="text-center" id="match-results-title" tabindex="-1" style="margin-bottom:6px">' + matches.length + ' căn hợp gu của bạn</h2>' +
+          '<p class="text-center match-results-explanation">' + UI.esc(explanation) + '</p>' +
           '<div class="grid grid-3">' + matches.map(function (m) {
             var u = m.unit || {};
             var img = u.cover_image && u.cover_image.image_url
               ? window.assetUrl(u.cover_image.image_url)
               : window.assetUrl('assets/images/homestays/fallback/unit-fallback.jpg');
             var reasons = (m.reasons || []).map(function (r) { return '<li>✓ ' + UI.esc(r.text) + '</li>'; }).join('');
+            var detail = new URLSearchParams({ id: String(u.id) });
+            if (stayPricing) {
+              detail.set('check_in', data.answers.check_in);
+              detail.set('check_out', data.answers.check_out);
+              detail.set('guests', data.answers.guests);
+            }
+            var price = m.quote
+              ? '<div class="match-total"><b>' + UI.formatVND(m.quote.total_amount) + '</b><span>Tổng cho ' + UI.esc(m.quote.number_of_nights) + ' đêm</span><small>Gồm phí vệ sinh ' + UI.formatVND(m.quote.cleaning_fee) + '</small></div>'
+              : '<div class="card-price"><b>' + UI.formatVND(u.base_price) + '</b><span>/ đêm</span></div>';
             return '<article class="card">' +
               '<div class="card-media"><img src="' + UI.esc(img) + '" alt="' + UI.esc(u.name) + '" loading="lazy" onerror="this.src=window.assetUrl(\'assets/images/homestays/fallback/unit-fallback.jpg\')">' +
-              '<span class="badge badge-olive">' + m.score_pct + '% phù hợp</span></div>' +
+              '<span class="badge badge-olive">Điểm gợi ý ' + UI.esc(m.score_raw) + '</span></div>' +
               '<div class="card-body">' +
               '<h3 class="card-title">' + UI.esc(u.name) + '</h3>' +
               '<div class="card-loc">' + UI.icon('map') + UI.esc((u.property && u.property.district) || 'Hà Nội') + ', Hà Nội</div>' +
               '<div class="card-rating">' + (u.review_count > 0 ? '★ ' + (Number(u.avg_rating) || 0).toFixed(1) + ' (' + u.review_count + ')' : 'Chưa có đánh giá') + '</div>' +
               (reasons ? '<ul class="reason-list">' + reasons + '</ul>' : '') +
-              '<div class="card-footer"><div class="card-price"><b>' + UI.formatVND(u.base_price) + '</b><span>/ đêm</span></div>' +
-              '<a class="btn btn-outline" href="unit-detail.html?id=' + u.id + '">Xem chi tiết</a></div>' +
+              '<div class="card-footer match-card-footer">' + price +
+              '<a class="btn btn-outline" href="unit-detail.html?' + UI.esc(detail.toString()) + '">Xem chi tiết</a></div>' +
               '</div></article>';
           }).join('') + '</div>' +
-          '<div class="text-center mt-6"><button type="button" class="btn btn-ghost" onclick="location.reload()">← Làm lại quiz</button></div>';
+          '<div class="text-center mt-6"><button type="button" class="btn btn-outline" id="match-edit">Đổi lựa chọn</button></div>';
+        document.getElementById('match-edit').addEventListener('click', editAnswers);
+        document.getElementById('match-results-title').focus();
       }
 
       showStep(1);
