@@ -67,10 +67,16 @@ def main():
     output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output, "x", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
         for name, data in sorted(entries.items()):
-            archive.writestr(name, data)
+            entry = zipfile.ZipInfo(name)
+            entry.create_system = 3
+            entry.external_attr = 0o100644 << 16
+            entry.compress_type = zipfile.ZIP_DEFLATED
+            archive.writestr(entry, data, compresslevel=6)
     with zipfile.ZipFile(output) as archive:
         if archive.testzip() is not None or set(archive.namelist()) != set(entries):
             raise SystemExit("Archive integrity verification failed.")
+        if any((entry.external_attr >> 16) & 0o777 != 0o644 for entry in archive.infolist()):
+            raise SystemExit("Archive files must be readable by the web server (0644).")
     manifest = {
         **release,
         "archiveSha256": hashlib.sha256(output.read_bytes()).hexdigest(),
