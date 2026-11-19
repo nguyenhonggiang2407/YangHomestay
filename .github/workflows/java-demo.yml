@@ -1,0 +1,61 @@
+name: Disposable Java demo container
+
+on:
+  push:
+    branches: [deploy/java-portfolio-demo-2026-11-19]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docker-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate startup scripts
+        run: bash -n java-backend/docker/start-demo.sh java-backend/db/init-demo.sh
+      - name: Build disposable Java and PostgreSQL image
+        run: docker build --pull -f Dockerfile.demo -t yanghomestay:demo .
+      - name: Verify runtime within the Free instance memory limit
+        run: |
+          set -euo pipefail
+          docker run -d --name yanghomestay-demo --memory=512m --cpus=1 \
+            -e YANGHOMESTAY_SECURE_COOKIE=false \
+            -e YANGHOMESTAY_RECEPTION_ENABLED=true \
+            -p 127.0.0.1:18080:10000 yanghomestay:demo
+          python3 java-backend/docker/smoke-demo.py
+          test "$(docker exec yanghomestay-demo id -u)" != 0
+          docker exec -i yanghomestay-demo bash <<'SH'
+            set -euo pipefail
+            for socket in /tmp/yanghomestay-demo.*; do
+              test "$(psql -h "$socket" -p 55432 -U postgres -Atc "SHOW listen_addresses")" = 127.0.0.1
+              test "$(psql -h "$socket" -p 55432 -U postgres -d yanghomestay -Atc "SELECT count(*) FROM admins WHERE status = 'active'")" = 0
+            done
+          SH
+          docker stats --no-stream yanghomestay-demo
+      - name: Verify graceful stop
+        run: |
+          docker stop --time 25 yanghomestay-demo
+          test "$(docker inspect --format '{{.State.ExitCode}}' yanghomestay-demo)" = 0
+      - name: Verify restart resets the demo database
+        run: |
+          docker start yanghomestay-demo
+          python3 java-backend/docker/smoke-demo.py
+          docker stop --time 25 yanghomestay-demo
+          test "$(docker inspect --format '{{.State.ExitCode}}' yanghomestay-demo)" = 0
+      - name: Save runtime logs
+        if: always()
+        run: docker logs yanghomestay-demo > java-demo-runtime.log 2>&1 || true
+      - uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: java-demo-runtime
+          path: java-demo-runtime.log
+      - name: Remove test container
+        if: always()
+        run: docker rm -f yanghomestay-demo || true

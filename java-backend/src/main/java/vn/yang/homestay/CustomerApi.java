@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -35,10 +36,12 @@ class CustomerApi {
   private final CustomerAccounts accounts;
   private final AuthenticationManager authenticationManager;
   private final HttpSessionSecurityContextRepository contexts;
+  private final boolean ephemeralDemo;
 
   CustomerApi(CatalogService catalog, BookingService bookings, FavoritesService favorites, YangMatchService matches,
       CustomerAccounts accounts, AuthenticationManager authenticationManager,
-      HttpSessionSecurityContextRepository contexts) {
+      HttpSessionSecurityContextRepository contexts,
+      @Value("${yanghomestay.demo.ephemeral:false}") boolean ephemeralDemo) {
     this.catalog = catalog;
     this.bookings = bookings;
     this.favorites = favorites;
@@ -46,13 +49,14 @@ class CustomerApi {
     this.accounts = accounts;
     this.authenticationManager = authenticationManager;
     this.contexts = contexts;
+    this.ephemeralDemo = ephemeralDemo;
   }
 
   @GetMapping
   Object read(@RequestParam Map<String, String> query, Authentication authentication, CsrfToken csrf) {
     return switch (query.getOrDefault("action", "")) {
       case "get-csrf" -> success(Map.of("token", csrf.getToken(),
-          "capabilities", Map.of("yangmatch_stay_search", true)));
+          "capabilities", Map.of("yangmatch_stay_search", true, "ephemeral_demo", ephemeralDemo)));
       case "check-auth" -> checkAuth(authentication);
       case "get-profile" -> success(requireCustomer(authentication));
       case "units" -> success(catalog.units(query));
@@ -130,6 +134,7 @@ class CustomerApi {
     Map<String, Object> payload = new LinkedHashMap<>();
     payload.put("success", true);
     payload.put("authenticated", customer != null);
+    payload.put("ephemeral_demo", ephemeralDemo);
     payload.put("data", customer);
     return payload;
   }
