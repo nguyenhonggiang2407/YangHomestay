@@ -140,6 +140,7 @@
         return null;
       }
       authLoaded = true;
+      if (j.ephemeral_demo === true) injectDemoNotice();
       customer = j.authenticated ? (j.data || null) : null;
       return customer;
     }).catch(function () {
@@ -153,6 +154,18 @@
   function clearAuthCache() { customer = null; authLoaded = false; }
 
   /* ── Layout injection ── */
+  function injectDemoNotice() {
+    if (document.getElementById('portfolio-demo-notice')) return;
+    var notice = document.createElement('aside');
+    notice.id = 'portfolio-demo-notice';
+    notice.className = 'portfolio-demo-notice';
+    notice.setAttribute('aria-label', 'Thông tin bản trải nghiệm');
+    notice.textContent = 'Bản trải nghiệm · Dữ liệu mẫu được đặt lại khi máy chủ khởi động. Chỉ dùng thông tin giả; đơn đặt không phải giao dịch thật.';
+    var header = document.getElementById('site-header');
+    if (header) header.insertAdjacentElement('afterend', notice);
+    else document.body.prepend(notice);
+  }
+
   function injectHeader() {
     var el = document.getElementById('site-header');
     if (!el) return;

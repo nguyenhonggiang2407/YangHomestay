@@ -4,6 +4,8 @@ Bản Java 17 dùng Spring Boot, Spring Security, Spring JDBC và PostgreSQL 17.
 
 ## Chạy thử
 
+Để chạy bản Java demo tách biệt với hosting PHP, xem [triển khai demo dùng PostgreSQL tạm](../docs/java-demo-deployment.md). Bản demo có thông báo dữ liệu được đặt lại và tắt cổng lễ tân.
+
 Từ thư mục `java-backend`, dùng JDK 17, Maven 3.9 và Docker Compose.
 
 ```sh

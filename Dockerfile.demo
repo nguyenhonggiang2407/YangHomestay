@@ -1,0 +1,27 @@
+# Demo only: both Java and PostgreSQL are disposable. Never attach production data.
+FROM maven:3.9.11-eclipse-temurin-17@sha256:e4a7ace3dc0d645ed97f8d9ad0b0d3f0b14fa8d150138f27f116d7105a639b82 AS build
+WORKDIR /build
+COPY java-backend/pom.xml java-backend/pom.xml
+RUN mvn -B -ntp -f java-backend/pom.xml dependency:go-offline
+COPY java-backend/src java-backend/src
+COPY customer customer
+COPY assets assets
+RUN mvn -B -ntp -f java-backend/pom.xml -DskipTests package
+
+FROM postgres:17-bookworm@sha256:837bed18782820fe967067cb5328b02b0d9992c1be9a37ee0c9c492cfc03af3b
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends openjdk-17-jre-headless tini curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY --from=build /build/java-backend/target/yanghomestay-booking.jar /app/yanghomestay.jar
+COPY database/supabase/0*.sql /app/sql/
+COPY java-backend/db/init-demo.sh /app/init-demo.sh
+COPY java-backend/docker/start-demo.sh /app/start-demo.sh
+RUN chmod 0555 /app/start-demo.sh /app/init-demo.sh \
+    && chmod -R a+rX /app
+USER postgres
+ENV PORT=10000
+EXPOSE 10000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
+    CMD curl --fail --silent "http://127.0.0.1:${PORT}/health" || exit 1
+ENTRYPOINT ["/usr/bin/tini", "--", "/app/start-demo.sh"]
