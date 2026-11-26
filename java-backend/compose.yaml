@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:17
+    ports:
+      - "127.0.0.1:55432:5432"
+    environment:
+      POSTGRES_DB: yanghomestay
+      POSTGRES_PASSWORD: postgres_demo_local
+      YANGHOMESTAY_DB_PASSWORD: yanghomestay_demo_local
+    volumes:
+      - booking-demo:/var/lib/postgresql/data
+      - ../database/supabase:/yanghomestay-sql:ro
+      - ./db/init-demo.sh:/docker-entrypoint-initdb.d/10-yanghomestay.sh:ro
+    healthcheck:
+      test:
+        - CMD
+        - pg_isready
+        - -h
+        - 127.0.0.1
+        - -U
+        - postgres
+        - -d
+        - yanghomestay
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  booking-demo:

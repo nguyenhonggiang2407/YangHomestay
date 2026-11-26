@@ -1,0 +1,2 @@
+java-backend/db/init-demo.sh text eol=lf
+java-backend/docker/*.sh text eol=lf

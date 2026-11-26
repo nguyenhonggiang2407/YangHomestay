@@ -11,12 +11,12 @@ RewriteRule ^customer/index\.html$ /customer/ [R=301,L,NE]
 RewriteRule ^(admin|manager|staff)/index\.html$ backend/portal.php?portal=$1 [L,QSA]
 
 # Production hardening: implementation, migration and diagnostic files are not web endpoints.
-RewriteRule ^(?:database|tools|\.vscode|\.sixth)(?:/|$) - [F,L,NC]
+RewriteRule ^(?:database|tools|docs|java-backend|target|\.git|\.github|\.vscode|\.sixth)(?:/|$) - [F,L,NC]
 RewriteRule ^backend/(?:tests|tools|diagnostics|legacy|logs)(?:/|$) - [F,L,NC]
 RewriteRule ^backend/config\.supabase\.(?:local|example)\.php$ - [F,L,NC]
 
 # Never serve credentials, logs, SQL dumps or project notes directly.
-<FilesMatch "(?i)^(?:\.env.*|config\.supabase\.local\.php)$|\.(?:log|sql|md|ps1|bat)$">
+<FilesMatch "(?i)^(?:\.env.*|\.git.*|config\.supabase\.local\.php)$|\.(?:log|sql|md|ps1|bat|java|class|jar|ya?ml|properties|ini|zip|tar|gz|7z)$">
     Require all denied
 </FilesMatch>
 
