@@ -8,8 +8,53 @@
 
 ## Đặt mã nguồn
 
-Đặt nội dung repository trong document root của domain, thường là httpdocs.
-Các thư mục customer, admin, manager, staff, backend và assets phải cùng cấp với index.php.
+Chỉ đặt gói web PHP trong document root của domain, thường là `httpdocs`.
+Không tải toàn bộ repository lên web: mã Java, Git, SQL, tài liệu, công cụ
+và cấu hình cục bộ không phải nội dung công khai.
+Các thư mục `customer`, `admin`, `manager`, `staff`, `backend` và `assets`
+phải cùng cấp với `index.php`.
+
+Từ một checkout sạch đã commit, tạo ZIP chỉ chứa các tệp web được phép:
+
+```sh
+python tools/build-web-release.py ../YangHomestay-php-web.zip
+```
+
+Công cụ chỉ lấy tệp Git đang quản lý, kiểm tra tính toàn vẹn ZIP và tạo
+manifest SHA-256 ở bên cạnh ZIP. `release.json` bên trong gói ghi commit
+nguồn, thời gian build và runtime `php-supabase`. Trường
+`javaBackendDeployed: false` phân biệt rõ bản PHP với backend Java.
+`config.supabase.local.php` không nằm trong gói.
+
+Với website đang hoạt động:
+
+1. Sao lưu `httpdocs` vào thư mục `private` ngoài webroot.
+2. Tải ZIP vào `private`, rồi giải nén đè các tệp web vào `httpdocs`.
+   Giữ nguyên `backend/config.supabase.local.php` và dữ liệu upload hiện có.
+3. Không chạy seed hoặc migration chỉ vì cập nhật gói giao diện.
+4. Đối chiếu `/release.json` với commit dự kiến; so sánh hash các tệp web
+   với manifest để xác nhận file đã được thay đúng.
+5. Kiểm tra trang, API, ảnh và quyền truy cập theo danh sách bên dưới.
+   Khi lỗi xuất hiện, khôi phục các tệp web từ bản sao trước triển khai.
+
+`.htaccess` trong gói chặn mã nguồn Java/Git, SQL, công cụ, tài liệu và
+archive kể cả khi các tệp này đã tồn tại từ một lần upload cũ.
+CSS/JS nội bộ có phiên bản URL để trình duyệt lấy bản mới sau cập nhật.
+
+## Phạm vi bản PHP ngày 19/11/2026
+
+Backend PHP giữ nền commit `6af0d6a`. Giao diện YangMatch và chi tiết căn
+nhận các cải tiến tương thích PHP từ commit Java `291a301`:
+
+- YangMatch kiểm tra capability trước khi hiện tìm kiếm theo ngày và số khách.
+  API PHP tiếp tục nhận bốn câu trả lời `q1`–`q4` và hiển thị giá cơ bản.
+- Gợi ý ngày trống ở chi tiết căn chỉ hiện nếu API trả mảng `suggestions`.
+- Phần Java/Spring Boot, lễ tân Java và PostgreSQL của Java không nằm trong
+  gói này. Upload PHP không triển khai hay tự đồng bộ backend Java.
+
+Triển khai Java cần runtime Java riêng, kết nối PostgreSQL và quy trình
+migration đã được kiểm tra. Không dùng nguyên bộ seed phát triển trên
+database đang hoạt động.
 
 Sao chép:
 
@@ -18,6 +63,7 @@ backend/config.supabase.example.php
 → backend/config.supabase.local.php
 ```
 
+Chỉ tạo tệp này khi cài mới; không ghi đè cấu hình đang hoạt động khi cập nhật.
 Điền URL và khóa backend Supabase. Có thể dùng các biến môi trường
 `SUPABASE_URL` và `SUPABASE_SECRET_KEY` theo cấu hình của backend.
 Khóa này không được đưa vào JavaScript hoặc tệp có thể tải công khai.

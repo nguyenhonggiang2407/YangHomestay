@@ -31,6 +31,8 @@ jobs:
           node --check admin/js/admin.js
           node --check staff/js/staff.js
           node --check java-backend/src/main/resources/static/reception/app.js
+      - name: Verify PHP web deployment archive
+        run: python3 tools/build-web-release.py "$RUNNER_TEMP/yanghomestay-php-web.zip"
 
   java-booking:
     runs-on: ubuntu-24.04
